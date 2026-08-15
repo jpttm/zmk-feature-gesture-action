@@ -32,6 +32,7 @@ export function GestureActions() {
 
   const [actions, setActions] = useState<Action[]>([]);
   const [names, setNames] = useState<string[]>([]);
+  const [namesError, setNamesError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,16 +66,35 @@ export function GestureActions() {
 
       // Names are fixed at build time, so this only needs doing once per
       // connection - but it is cheap enough to redo alongside a reload.
+      //
+      // Failing here is not fatal: the table falls back to slot numbers. It
+      // does need saying out loud though, because silently showing numbers
+      // looks identical to firmware that simply has no names configured.
       const collectedNames: string[] = [];
+      let nameFailure: string | null = null;
       startSlot = 0;
+
       for (;;) {
         const res = await call({ kind: "getSlotNames", startSlot });
-        if (!res || res.kind !== "getSlotNames") break;
+        if (!res) {
+          nameFailure = "no response";
+          break;
+        }
+        if (res.kind === "error") {
+          nameFailure = res.message;
+          break;
+        }
+        if (res.kind !== "getSlotNames") {
+          nameFailure = "this firmware predates slot names";
+          break;
+        }
         collectedNames.push(...res.names);
         if (res.names.length === 0 || collectedNames.length >= res.totalSlots) break;
         startSlot = collectedNames.length;
       }
+
       setNames(collectedNames);
+      setNamesError(nameFailure);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -127,6 +147,11 @@ export function GestureActions() {
         <p className="muted">Loading the behaviour list from the keyboard…</p>
       )}
       {error && <p className="warn">{error}</p>}
+      {namesError && (
+        <p className="muted small">
+          Showing slot numbers — could not read slot names ({namesError}).
+        </p>
+      )}
 
       <table>
         <thead>
