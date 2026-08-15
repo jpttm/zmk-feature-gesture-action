@@ -57,12 +57,39 @@ message GetSlotNamesResponse {
     repeated string names = 3;
 }
 
+// A gesture group: one mouse-gesture processor instance, owning a run of
+// slots, plus the layers it currently acts on. Editing active_layers is what
+// moves a whole set of gestures from one layer to another without a rebuild.
+message Group {
+    uint32 index = 1;
+    string name = 2;
+    uint32 active_layers = 3;
+}
+
+message GetGroupsRequest {}
+
+message GetGroupsResponse {
+    repeated Group groups = 1;
+}
+
+message SetGroupLayersRequest {
+    uint32 index = 1;
+    uint32 active_layers = 2;
+    bool persist = 3;
+}
+
+message SetGroupLayersResponse {
+    bool success = 1;
+}
+
 message Request {
     oneof request_type {
         GetActionsRequest get_actions = 1;
         SetActionRequest set_action = 2;
         ResetActionRequest reset_action = 3;
         GetSlotNamesRequest get_slot_names = 4;
+        GetGroupsRequest get_groups = 5;
+        SetGroupLayersRequest set_group_layers = 6;
     }
 }
 
@@ -77,5 +104,7 @@ message Response {
         SetActionResponse set_action = 3;
         ResetActionResponse reset_action = 4;
         GetSlotNamesResponse get_slot_names = 5;
+        GetGroupsResponse get_groups = 6;
+        SetGroupLayersResponse set_group_layers = 7;
     }
 }

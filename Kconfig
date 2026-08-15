@@ -29,6 +29,17 @@ config ZMK_GESTURE_ACTION_STUDIO_RPC
       Without this the behaviour still works, but every slot is fixed to its
       devicetree default.
 
+config ZMK_GESTURE_ACTION_LAYER_GROUPS
+    bool "Expose mouse-gesture layer groups over RPC"
+    default y
+    depends on ZMK_GESTURE_ACTION_STUDIO_RPC
+    depends on ZMK_MOUSE_GESTURE
+    help
+      Lets the settings UI read and change which layers each mouse-gesture
+      processor acts on, so a whole gesture set can be moved from one layer to
+      another without a rebuild. Needs kot149/zmk-mouse-gesture with
+      active-layers support.
+
 config ZMK_GESTURE_ACTION_COUNT
     int "Number of gesture action slots"
     default 16

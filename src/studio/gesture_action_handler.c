@@ -11,6 +11,10 @@
 #include <zmk/behaviors/gesture_action.h>
 #include <zmk/studio/custom.h>
 
+#if IS_ENABLED(CONFIG_ZMK_GESTURE_ACTION_LAYER_GROUPS)
+#include <zmk/mouse_gesture.h>
+#endif
+
 #include <zephyr/logging/log.h>
 #include <stdio.h>
 #include <string.h>
@@ -87,6 +91,53 @@ static int handle_get_slot_names(const jpttm_gesture_action_GetSlotNamesRequest 
     resp->response_type.get_slot_names = result;
     return 0;
 }
+
+#if IS_ENABLED(CONFIG_ZMK_GESTURE_ACTION_LAYER_GROUPS)
+
+static int handle_get_groups(jpttm_gesture_action_Response *resp) {
+    jpttm_gesture_action_GetGroupsResponse result =
+        jpttm_gesture_action_GetGroupsResponse_init_zero;
+
+    const uint8_t total = zmk_mouse_gesture_count();
+    const size_t max = ARRAY_SIZE(result.groups);
+
+    for (uint8_t i = 0; i < total && result.groups_count < max; i++) {
+        jpttm_gesture_action_Group *group = &result.groups[result.groups_count++];
+        group->index = i;
+        group->active_layers = zmk_mouse_gesture_get_active_layers(i);
+
+        const char *name = zmk_mouse_gesture_name(i);
+        snprintf(group->name, sizeof(group->name), "%s", name ? name : "");
+    }
+
+    if (total > max) {
+        LOG_WRN("Reporting %d of %d gesture groups", (int)max, total);
+    }
+
+    resp->which_response_type = jpttm_gesture_action_Response_get_groups_tag;
+    resp->response_type.get_groups = result;
+    return 0;
+}
+
+static int handle_set_group_layers(const jpttm_gesture_action_SetGroupLayersRequest *req,
+                                   jpttm_gesture_action_Response *resp) {
+    int rc = zmk_mouse_gesture_set_active_layers((uint8_t)req->index, req->active_layers,
+                                                 req->persist);
+    if (rc == -EINVAL) {
+        LOG_WRN("SetGroupLayers for unknown group %u", req->index);
+        return rc;
+    }
+
+    jpttm_gesture_action_SetGroupLayersResponse result =
+        jpttm_gesture_action_SetGroupLayersResponse_init_zero;
+    result.success = (rc == 0);
+
+    resp->which_response_type = jpttm_gesture_action_Response_set_group_layers_tag;
+    resp->response_type.set_group_layers = result;
+    return 0;
+}
+
+#endif // IS_ENABLED(CONFIG_ZMK_GESTURE_ACTION_LAYER_GROUPS)
 
 static int handle_set_action(const jpttm_gesture_action_SetActionRequest *req,
                              jpttm_gesture_action_Response *resp) {
@@ -168,6 +219,14 @@ static bool gesture_action_rpc_handle_request(const zmk_custom_CallRequest *raw_
     case jpttm_gesture_action_Request_get_slot_names_tag:
         rc = handle_get_slot_names(&req.request_type.get_slot_names, resp);
         break;
+#if IS_ENABLED(CONFIG_ZMK_GESTURE_ACTION_LAYER_GROUPS)
+    case jpttm_gesture_action_Request_get_groups_tag:
+        rc = handle_get_groups(resp);
+        break;
+    case jpttm_gesture_action_Request_set_group_layers_tag:
+        rc = handle_set_group_layers(&req.request_type.set_group_layers, resp);
+        break;
+#endif
     default:
         LOG_WRN("Unsupported gesture action request type: %d", req.which_request_type);
         fail(resp, "Unsupported request");
