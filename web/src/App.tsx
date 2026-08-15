@@ -5,19 +5,22 @@ import {
   isWebSerialSupported,
   isWebBluetoothSupported,
   isUserCancelledError,
+  ZMKAppContext,
 } from "@cormoran/zmk-studio-react-hook";
 import { connect as connectGatt } from "@zmkfirmware/zmk-studio-ts-client/transport/gatt";
-import { ZMKAppContext } from "@cormoran/zmk-studio-react-hook";
 import { GestureActions } from "./GestureActions";
+import { LangProvider, LangToggle, useT } from "./i18n";
 
-/**
- * Step 1 of the gesture-action project: prove the browser can reach the
- * keyboard over both transports and enumerate its custom RPC subsystems.
- *
- * Nothing here is gesture-specific yet. Once a subsystem shows up in the list
- * below, the settings UI has somewhere to talk to.
- */
 export function App() {
+  return (
+    <LangProvider>
+      <Page />
+    </LangProvider>
+  );
+}
+
+function Page() {
+  const t = useT();
   const zmk = useZMKApp();
   const [connectError, setConnectError] = useState<string | null>(null);
 
@@ -42,119 +45,120 @@ export function App() {
 
   return (
     <ZMKAppContext.Provider value={zmk}>
-    <main>
-      <h1>ZMK Gesture Action</h1>
-      <p className="lede">
-        Connection check. Connect a keyboard, then confirm its custom RPC
-        subsystems are listed.
-      </p>
-
-      <section>
-        <h2>Transport support</h2>
-        <ul className="support">
-          <li>
-            <Badge ok={serialSupported} /> Web Serial (USB)
-          </li>
-          <li>
-            <Badge ok={bluetoothSupported} /> Web Bluetooth
-          </li>
-        </ul>
-        {!serialSupported && !bluetoothSupported && (
-          <p className="warn">
-            This browser exposes neither transport. Use a Chromium-based browser
-            (Chrome or Edge) over HTTPS, or Bluefy on iOS.
-          </p>
-        )}
-      </section>
-
-      <section>
-        <h2>Connection</h2>
-        {zmk.isConnected ? (
-          <button onClick={zmk.disconnect}>Disconnect</button>
-        ) : (
-          <div className="row">
-            <button
-              onClick={() => connectWith(connectSerial as never)}
-              disabled={!serialSupported || isLoading}
-            >
-              Connect over USB
-            </button>
-            <button
-              onClick={() => connectWith(connectGatt as never)}
-              disabled={!bluetoothSupported || isLoading}
-            >
-              Connect over Bluetooth
-            </button>
+      <main>
+        <header className="pageHead">
+          <div>
+            <h1>{t("title")}</h1>
+            <p className="lede">{t("lede")}</p>
           </div>
-        )}
-        {isLoading && <p className="muted">Connecting…</p>}
-        {(connectError ?? error) && (
-          <p className="warn">{connectError ?? error}</p>
-        )}
-      </section>
+          <LangToggle />
+        </header>
 
-      {zmk.isConnected && (
-        <>
-          <section>
-            <h2>Device</h2>
-            <dl>
-              <dt>Name</dt>
-              <dd>{deviceInfo?.name ?? "—"}</dd>
-              <dt>Serial</dt>
-              <dd>{formatSerial(deviceInfo?.serialNumber)}</dd>
-            </dl>
-          </section>
+        <section>
+          <h2>{t("transportSupport")}</h2>
+          <ul className="support">
+            <li>
+              <Badge ok={serialSupported} /> {t("webSerial")}
+            </li>
+            <li>
+              <Badge ok={bluetoothSupported} /> {t("webBluetooth")}
+            </li>
+          </ul>
+          {!serialSupported && !bluetoothSupported && (
+            <p className="warn">{t("noTransport")}</p>
+          )}
+        </section>
 
-          <section>
-            <h2>Custom subsystems ({subsystems.length})</h2>
-            {subsystems.length === 0 ? (
-              <p className="muted">
-                None reported. The firmware is reachable but exposes no custom
-                RPC subsystems.
-              </p>
-            ) : (
-              <table>
-                <thead>
-                  <tr>
-                    <th>Index</th>
-                    <th>Identifier</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {subsystems.map((s, i) => (
-                    <tr key={s.identifier ?? i}>
-                      <td className="num">{i}</td>
-                      <td>
-                        <code>{s.identifier}</code>
-                      </td>
+        <section>
+          <h2>{t("connection")}</h2>
+          {zmk.isConnected ? (
+            <button onClick={zmk.disconnect}>{t("disconnect")}</button>
+          ) : (
+            <div className="row">
+              <button
+                onClick={() => connectWith(connectSerial as never)}
+                disabled={!serialSupported || isLoading}
+              >
+                {t("connectUsb")}
+              </button>
+              <button
+                onClick={() => connectWith(connectGatt as never)}
+                disabled={!bluetoothSupported || isLoading}
+              >
+                {t("connectBle")}
+              </button>
+            </div>
+          )}
+          {isLoading && <p className="muted">{t("connecting")}</p>}
+          {(connectError ?? error) && (
+            <p className="warn">{connectError ?? error}</p>
+          )}
+        </section>
+
+        {zmk.isConnected && (
+          <>
+            <GestureActions />
+
+            <section>
+              <h2>{t("device")}</h2>
+              <dl>
+                <dt>{t("deviceName")}</dt>
+                <dd>{deviceInfo?.name ?? "—"}</dd>
+                <dt>{t("serial")}</dt>
+                <dd>{formatSerial(deviceInfo?.serialNumber)}</dd>
+              </dl>
+            </section>
+
+            <section>
+              <h2>
+                {t("subsystems")} ({subsystems.length})
+              </h2>
+              {subsystems.length === 0 ? (
+                <p className="muted">{t("noSubsystems")}</p>
+              ) : (
+                <table>
+                  <thead>
+                    <tr>
+                      <th className="slotCol">{t("index")}</th>
+                      <th>{t("identifier")}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </section>
+                  </thead>
+                  <tbody>
+                    {subsystems.map((s, i) => (
+                      <tr key={s.identifier ?? i}>
+                        <td className="slotCol">{i}</td>
+                        <td>
+                          <code>{s.identifier}</code>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </section>
+          </>
+        )}
 
-          <GestureActions />
-        </>
-      )}
-
-      <footer>
-        <a href="https://github.com/jpttm/zmk-feature-gesture-action">
-          Source
-        </a>{" "}
-        · MIT · built on{" "}
-        <a href="https://github.com/cormoran/react-zmk-studio">
-          @cormoran/zmk-studio-react-hook
-        </a>
-      </footer>
-    </main>
+        <footer>
+          <a href="https://github.com/jpttm/zmk-feature-gesture-action">
+            {t("source")}
+          </a>{" "}
+          · MIT · {t("builtOn")}{" "}
+          <a href="https://github.com/cormoran/react-zmk-studio">
+            @cormoran/zmk-studio-react-hook
+          </a>
+        </footer>
+      </main>
     </ZMKAppContext.Provider>
   );
 }
 
 function Badge({ ok }: { ok: boolean }) {
+  const t = useT();
   return (
-    <span className={ok ? "badge ok" : "badge no"}>{ok ? "yes" : "no"}</span>
+    <span className={ok ? "badge ok" : "badge no"}>
+      {ok ? t("yes") : t("no")}
+    </span>
   );
 }
 

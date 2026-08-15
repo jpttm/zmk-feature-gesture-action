@@ -25,6 +25,14 @@ export const MODIFIERS = [
   { label: "GUI", bit: 0x08 },
 ] as const;
 
+export type KeycodeGroupKey =
+  | "keysEditing"
+  | "keysNavigation"
+  | "keysLetters"
+  | "keysNumbers"
+  | "keysFunction"
+  | "keysMedia";
+
 export interface Keycode {
   name: string;
   value: number;
@@ -54,9 +62,9 @@ const functionKeys: Keycode[] = [
   ...Array.from({ length: 12 }, (_, i) => key(`F${i + 1}`, 0x3a + i)),
 ];
 
-export const KEYCODE_GROUPS: { label: string; keys: Keycode[] }[] = [
+export const KEYCODE_GROUPS: { labelKey: KeycodeGroupKey; keys: Keycode[] }[] = [
   {
-    label: "Editing",
+    labelKey: "keysEditing",
     keys: [
       key("Enter", 0x28),
       key("Escape", 0x29),
@@ -68,7 +76,7 @@ export const KEYCODE_GROUPS: { label: string; keys: Keycode[] }[] = [
     ],
   },
   {
-    label: "Navigation",
+    labelKey: "keysNavigation",
     keys: [
       key("Left", 0x50),
       key("Right", 0x4f),
@@ -80,11 +88,11 @@ export const KEYCODE_GROUPS: { label: string; keys: Keycode[] }[] = [
       key("Page Down", 0x4e),
     ],
   },
-  { label: "Letters", keys: letters },
-  { label: "Numbers", keys: digits },
-  { label: "Function", keys: functionKeys },
+  { labelKey: "keysLetters", keys: letters },
+  { labelKey: "keysNumbers", keys: digits },
+  { labelKey: "keysFunction", keys: functionKeys },
   {
-    label: "Media",
+    labelKey: "keysMedia",
     keys: [
       consumer("Play / Pause", 0xcd),
       consumer("Next track", 0xb5),

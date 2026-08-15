@@ -155,9 +155,19 @@ th {
   color: var(--muted);
 }
 
+/* Slot labels like "L10 Right" need room; 4rem wrapped them. */
+.slotCol {
+  width: 6.4rem;
+  white-space: nowrap;
+}
+
+td.slotCol {
+  color: var(--muted);
+}
+
 td.num {
   color: var(--muted);
-  width: 4rem;
+  width: 6.4rem;
 }
 
 code {
@@ -238,4 +248,46 @@ label.check {
 
 details summary {
   cursor: pointer;
+}
+
+.pageHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.pageHead .lede {
+  margin-bottom: 0;
+}
+
+.langToggle {
+  display: flex;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+button.lang {
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  border-radius: 0;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+}
+
+button.lang.on {
+  background: var(--accent);
+  color: #fff;
+}
+
+td.editorCell {
+  padding: 0 0.5rem 0.75rem;
+}
+
+td.editorCell .editor {
+  margin-top: 0;
 }

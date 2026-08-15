@@ -19,8 +19,10 @@ import {
   packKeycode,
   splitKeycode,
 } from "./keycodes";
+import { useT } from "./i18n";
 
 export function GestureActions() {
+  const t = useT();
   const zmk = useContext(ZMKAppContext);
   const { ready, call } = useCustomSubsystem<Request, Response>(
     SUBSYSTEM_ID,
@@ -50,7 +52,7 @@ export function GestureActions() {
 
       for (;;) {
         const res = await call({ kind: "getActions", startSlot });
-        if (!res) throw new Error("No response");
+        if (!res) throw new Error(t("noResponse"));
         if (res.kind === "error") throw new Error(res.message);
         if (res.kind !== "getActions") throw new Error("Unexpected response");
 
@@ -64,10 +66,7 @@ export function GestureActions() {
       setTotal(totalSlots);
       setActions(collected);
 
-      // Names are fixed at build time, so this only needs doing once per
-      // connection - but it is cheap enough to redo alongside a reload.
-      //
-      // Failing here is not fatal: the table falls back to slot numbers. It
+      // Failing here is not fatal - the table falls back to slot numbers. It
       // does need saying out loud though, because silently showing numbers
       // looks identical to firmware that simply has no names configured.
       const collectedNames: string[] = [];
@@ -77,7 +76,7 @@ export function GestureActions() {
       for (;;) {
         const res = await call({ kind: "getSlotNames", startSlot });
         if (!res) {
-          nameFailure = "no response";
+          nameFailure = t("noResponse");
           break;
         }
         if (res.kind === "error") {
@@ -85,7 +84,7 @@ export function GestureActions() {
           break;
         }
         if (res.kind !== "getSlotNames") {
-          nameFailure = "this firmware predates slot names";
+          nameFailure = t("oldFirmware");
           break;
         }
         collectedNames.push(...res.names);
@@ -100,7 +99,7 @@ export function GestureActions() {
     } finally {
       setBusy(false);
     }
-  }, [call]);
+  }, [call, t]);
 
   useEffect(() => {
     if (ready) void refresh();
@@ -112,7 +111,7 @@ export function GestureActions() {
       setError(null);
       try {
         const res = await call(request);
-        if (!res) throw new Error("No response");
+        if (!res) throw new Error(t("noResponse"));
         if (res.kind === "error") throw new Error(res.message);
         setEditing(null);
         await refresh();
@@ -121,17 +120,14 @@ export function GestureActions() {
         setBusy(false);
       }
     },
-    [call, refresh],
+    [call, refresh, t],
   );
 
   if (!ready) {
     return (
       <section>
-        <h2>Gesture actions</h2>
-        <p className="muted">
-          This keyboard does not expose <code>{SUBSYSTEM_ID}</code>. Flash
-          firmware built with the gesture-action module to configure it here.
-        </p>
+        <h2>{t("gestureActions")}</h2>
+        <p className="muted">{t("notSupported")}</p>
       </section>
     );
   }
@@ -141,71 +137,84 @@ export function GestureActions() {
 
   return (
     <section>
-      <h2>Gesture actions ({total})</h2>
+      <h2>
+        {t("gestureActions")} ({total})
+      </h2>
 
-      {behaviorsLoading && (
-        <p className="muted">Loading the behaviour list from the keyboard…</p>
-      )}
+      {behaviorsLoading && <p className="muted">{t("loadingBehaviors")}</p>}
       {error && <p className="warn">{error}</p>}
       {namesError && (
         <p className="muted small">
-          Showing slot numbers — could not read slot names ({namesError}).
+          {t("namesFallback")}（{namesError}）
         </p>
       )}
 
       <table>
         <thead>
           <tr>
-            <th>Slot</th>
-            <th>Assignment</th>
+            <th className="slotCol">{t("slot")}</th>
+            <th>{t("assignment")}</th>
             <th />
           </tr>
         </thead>
         <tbody>
-          {actions.map((action) => (
-            <tr key={action.slot}>
-              <td className="num">{names[action.slot] || action.slot}</td>
-              <td>
-                {action.behaviorId === UNSET ? (
-                  <span className="muted">default (from firmware)</span>
-                ) : isKeyPress(nameFor(action.behaviorId)) ? (
-                  <code>{describeKeycode(action.param1)}</code>
-                ) : (
-                  <code>
-                    {nameFor(action.behaviorId)} {action.param1} {action.param2}
-                  </code>
-                )}
-              </td>
-              <td className="right">
-                <button
-                  className="ghost"
-                  disabled={busy}
-                  onClick={() =>
-                    setEditing(editing === action.slot ? null : action.slot)
-                  }
-                >
-                  {editing === action.slot ? "Cancel" : "Edit"}
-                </button>
-              </td>
-            </tr>
-          ))}
+          {actions.flatMap((action) => {
+            const row = (
+              <tr key={action.slot}>
+                <td className="slotCol">{names[action.slot] || action.slot}</td>
+                <td>
+                  {action.behaviorId === UNSET ? (
+                    <span className="muted">{t("fromFirmware")}</span>
+                  ) : isKeyPress(nameFor(action.behaviorId)) ? (
+                    <code>{describeKeycode(action.param1)}</code>
+                  ) : (
+                    <code>
+                      {nameFor(action.behaviorId)} {action.param1} {action.param2}
+                    </code>
+                  )}
+                </td>
+                <td className="right">
+                  <button
+                    className="ghost"
+                    disabled={busy}
+                    onClick={() =>
+                      setEditing(editing === action.slot ? null : action.slot)
+                    }
+                  >
+                    {editing === action.slot ? t("cancel") : t("edit")}
+                  </button>
+                </td>
+              </tr>
+            );
+
+            if (editing !== action.slot) {
+              return [row];
+            }
+
+            // The editor is its own row directly under the one being edited,
+            // so the controls sit next to the thing they change.
+            return [
+              row,
+              <tr key={`${action.slot}-editor`}>
+                <td colSpan={3} className="editorCell">
+                  <Editor
+                    slot={action.slot}
+                    label={names[action.slot] || `${t("slot")} ${action.slot}`}
+                    current={action}
+                    behaviors={behaviors}
+                    busy={busy}
+                    onApply={apply}
+                  />
+                </td>
+              </tr>,
+            ];
+          })}
         </tbody>
       </table>
 
-      {editing !== null && (
-        <Editor
-          slot={editing}
-          label={names[editing] || `Slot ${editing}`}
-          current={actions.find((a) => a.slot === editing)}
-          behaviors={behaviors}
-          busy={busy}
-          onApply={apply}
-        />
-      )}
-
       <div className="row">
         <button className="ghost" disabled={busy} onClick={() => void refresh()}>
-          Reload
+          {t("reload")}
         </button>
       </div>
     </section>
@@ -232,6 +241,7 @@ function Editor({
   busy: boolean;
   onApply: (request: Request) => void;
 }) {
+  const t = useT();
   const [behaviorId, setBehaviorId] = useState(current?.behaviorId ?? 0);
   const [param1, setParam1] = useState(current?.param1 ?? 0);
   const [param2, setParam2] = useState(current?.param2 ?? 0);
@@ -247,12 +257,12 @@ function Editor({
       <h3>{label}</h3>
 
       <label>
-        Behaviour
+        {t("behaviour")}
         <select
           value={behaviorId}
           onChange={(e) => setBehaviorId(Number(e.target.value))}
         >
-          <option value={0}>— use the firmware default —</option>
+          <option value={0}>{t("useFirmwareDefault")}</option>
           {behaviors.map((b) => (
             <option key={b.id} value={b.id}>
               {b.displayName}
@@ -284,14 +294,14 @@ function Editor({
           </div>
 
           <label>
-            Key
+            {t("keyLabel")}
             <select
               value={base}
               onChange={(e) => setParam1(packKeycode(mods, Number(e.target.value)))}
             >
-              <option value={0}>— pick a key —</option>
+              <option value={0}>{t("pickKey")}</option>
               {KEYCODE_GROUPS.map((group) => (
-                <optgroup key={group.label} label={group.label}>
+                <optgroup key={group.labelKey} label={t(group.labelKey)}>
                   {group.keys.map((k) => (
                     <option key={k.value} value={k.value}>
                       {k.name}
@@ -303,14 +313,13 @@ function Editor({
           </label>
 
           <p className="muted small">
-            Sends <code>{describeKeycode(param1)}</code>. Anything missing from
-            the list can be entered as a raw value below.
+            {t("sends")} <code>{describeKeycode(param1)}</code> — {t("sendsHint")}
           </p>
         </>
       ) : null}
 
       <details>
-        <summary className="muted small">Raw parameters</summary>
+        <summary className="muted small">{t("rawParameters")}</summary>
         <div className="row">
           <label>
             param1
@@ -338,22 +347,22 @@ function Editor({
           disabled={busy}
           onClick={() => onApply({ kind: "setAction", action, persist: true })}
         >
-          Save
+          {t("save")}
         </button>
         <button
           className="ghost"
           disabled={busy}
           onClick={() => onApply({ kind: "setAction", action, persist: false })}
-          title="Apply without writing to flash — lost on reboot"
+          title={t("tryTitle")}
         >
-          Try without saving
+          {t("tryWithoutSaving")}
         </button>
         <button
           className="ghost"
           disabled={busy}
           onClick={() => onApply({ kind: "resetAction", slot, persist: true })}
         >
-          Reset to default
+          {t("resetToDefault")}
         </button>
       </div>
     </div>
