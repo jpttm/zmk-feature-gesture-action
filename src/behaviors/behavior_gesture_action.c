@@ -270,11 +270,22 @@ static const struct behavior_driver_api behavior_gesture_action_driver_api = {
                          DT_DRV_INST(n))),                                                         \
                 ({.behavior_dev = NULL, .param1 = 0, .param2 = 0},))
 
+#define GA_SLOT_NAME(idx, node_id) DT_PROP_BY_IDX(node_id, slot_names, idx),
+
+/* Same one-entry-minimum trick as GA_DEFAULTS: a NULL name reads as "unnamed". */
+#define GA_SLOT_NAMES(n)                                                                           \
+    COND_CODE_1(DT_INST_NODE_HAS_PROP(n, slot_names),                                              \
+                (LISTIFY(DT_INST_PROP_LEN(n, slot_names), GA_SLOT_NAME, (), DT_DRV_INST(n))),      \
+                (NULL,))
+
 #define GESTURE_ACTION_INST(n)                                                                     \
     static const struct default_binding gesture_action_defaults_##n[] = {GA_DEFAULTS(n)};          \
+    static const char *const gesture_action_slot_names_##n[] = {GA_SLOT_NAMES(n)};                 \
     static const struct behavior_gesture_action_config behavior_gesture_action_config_##n = {      \
         .defaults = gesture_action_defaults_##n,                                                   \
         .defaults_len = ARRAY_SIZE(gesture_action_defaults_##n),                                   \
+        .slot_names = gesture_action_slot_names_##n,                                               \
+        .slot_names_len = ARRAY_SIZE(gesture_action_slot_names_##n),                               \
     };                                                                                             \
     BEHAVIOR_DT_INST_DEFINE(n, NULL, NULL, NULL, &behavior_gesture_action_config_##n, POST_KERNEL, \
                             CONFIG_KERNEL_INIT_PRIORITY_DEFAULT,                                   \
