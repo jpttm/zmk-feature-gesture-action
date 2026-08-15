@@ -309,3 +309,26 @@ button.ghost.on {
   padding: 0.25rem 0.5rem;
   border-bottom: 1px solid var(--line);
 }
+
+.previewTable th {
+  text-align: left;
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: none;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.previewTable td {
+  vertical-align: top;
+}
+
+.cellLabel {
+  display: block;
+}
+
+.cellKey {
+  display: block;
+  font-size: 0.8em;
+  color: var(--muted);
+}

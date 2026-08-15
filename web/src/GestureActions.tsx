@@ -184,6 +184,7 @@ export function GestureActions() {
 
       <Presets
         total={total}
+        names={names}
         busy={busy}
         keyPressId={behaviors.find((b) => isKeyPress(b.displayName))?.id ?? null}
         preview={preview}
@@ -263,8 +264,34 @@ export function GestureActions() {
   );
 }
 
+/** Slots run up/down/left/right per gesture layer, so four to a row. */
+function groupSlots(count: number): number[][] {
+  const rows: number[][] = [];
+  for (let start = 0; start < count; start += 4) {
+    rows.push([start, start + 1, start + 2, start + 3]);
+  }
+  return rows;
+}
+
+/**
+ * Row heading. The firmware's slot names carry the layer ("L8 Up"), so the
+ * shared prefix is the most meaningful label available; fall back to a group
+ * number when a keyboard names its slots some other way.
+ */
+function rowLabel(
+  names: string[],
+  firstSlot: number,
+  index: number,
+  groupWord: string,
+): string {
+  const name = names[firstSlot];
+  const prefix = name?.trim().split(/\s+/)[0];
+  return prefix || `${groupWord} ${index + 1}`;
+}
+
 function Presets({
   total,
+  names,
   busy,
   keyPressId,
   preview,
@@ -272,6 +299,7 @@ function Presets({
   onApply,
 }: {
   total: number;
+  names: string[];
   busy: boolean;
   keyPressId: number | null;
   preview: Preset | null;
@@ -314,15 +342,40 @@ function Presets({
             <p className="warn small">{t("presetMismatch")}</p>
           )}
 
+          {/* One row per gesture layer, one column per direction: reading
+              "what does up do on layer 8" off a flat list of sixteen was
+              needlessly hard. */}
           <table className="previewTable">
+            <thead>
+              <tr>
+                <th>{t("colLayer")}</th>
+                <th>{t("colUp")}</th>
+                <th>{t("colDown")}</th>
+                <th>{t("colLeft")}</th>
+                <th>{t("colRight")}</th>
+              </tr>
+            </thead>
             <tbody>
-              {preview.actions.map((item) => (
-                <tr key={item.slot}>
-                  <td className="slotCol">{item.slot}</td>
-                  <td>{item.label[lang]}</td>
-                  <td>
-                    <code>{describeKeycode(item.keycode)}</code>
-                  </td>
+              {groupSlots(preview.actions.length).map((group, i) => (
+                <tr key={i}>
+                  <th scope="row">{rowLabel(names, group[0], i, t("groupLabel"))}</th>
+                  {group.map((slot) => {
+                    const item = preview.actions.find((x) => x.slot === slot);
+                    return (
+                      <td key={slot}>
+                        {item ? (
+                          <>
+                            <span className="cellLabel">{item.label[lang]}</span>
+                            <code className="cellKey">
+                              {describeKeycode(item.keycode)}
+                            </code>
+                          </>
+                        ) : (
+                          <span className="muted">—</span>
+                        )}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>
