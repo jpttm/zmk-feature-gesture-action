@@ -20,6 +20,15 @@ config ZMK_GESTURE_ACTION
 
 if ZMK_GESTURE_ACTION
 
+config ZMK_GESTURE_ACTION_STUDIO_RPC
+    bool "Expose gesture actions over the custom Studio RPC protocol"
+    default y
+    depends on ZMK_STUDIO
+    help
+      Lets a web UI read and reassign gesture actions over USB or Bluetooth.
+      Without this the behaviour still works, but every slot is fixed to its
+      devicetree default.
+
 config ZMK_GESTURE_ACTION_COUNT
     int "Number of gesture action slots"
     default 32

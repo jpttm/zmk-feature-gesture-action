@@ -1,0 +1,156 @@
+/*
+ * Copyright (c) 2026 jpttm
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#include <pb_decode.h>
+#include <pb_encode.h>
+
+#include <jpttm/gesture_action/gesture_action.pb.h>
+#include <zmk/behaviors/gesture_action.h>
+#include <zmk/studio/custom.h>
+
+#include <zephyr/logging/log.h>
+#include <stdio.h>
+#include <string.h>
+
+LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
+
+/* Where the settings UI is served from. The firmware advertises these, so a
+ * Studio client knows where to load the page for this subsystem. The localhost
+ * entry is for `npm run dev` against a real keyboard. */
+static struct zmk_rpc_custom_subsystem_meta gesture_action_meta = {
+    ZMK_RPC_CUSTOM_SUBSYSTEM_UI_URLS("https://jpttm.github.io/zmk-feature-gesture-action/",
+                                     "http://localhost:5173"),
+    /* Reading is harmless, but reassigning a gesture can type anything, so the
+     * whole subsystem sits behind an unlocked Studio session. */
+    .security = ZMK_STUDIO_RPC_HANDLER_SECURED,
+};
+
+ZMK_RPC_CUSTOM_SUBSYSTEM(jpttm__gesture_action, &gesture_action_meta,
+                         gesture_action_rpc_handle_request);
+
+ZMK_RPC_CUSTOM_SUBSYSTEM_RESPONSE_BUFFER(jpttm__gesture_action, jpttm_gesture_action_Response);
+
+static int handle_get_actions(const jpttm_gesture_action_GetActionsRequest *req,
+                              jpttm_gesture_action_Response *resp) {
+    jpttm_gesture_action_GetActionsResponse result =
+        jpttm_gesture_action_GetActionsResponse_init_zero;
+
+    const uint8_t total = zmk_gesture_action_count();
+    const size_t page = ARRAY_SIZE(result.actions);
+
+    result.total_slots = total;
+    result.start_slot = req->start_slot;
+
+    for (uint32_t slot = req->start_slot; slot < total && result.actions_count < page; slot++) {
+        struct zmk_gesture_action_entry entry;
+        if (zmk_gesture_action_get((uint8_t)slot, &entry) != 0) {
+            break;
+        }
+
+        result.actions[result.actions_count++] = (jpttm_gesture_action_Action){
+            .slot = slot,
+            .behavior_id = entry.behavior_local_id,
+            .param1 = entry.param1,
+            .param2 = entry.param2,
+        };
+    }
+
+    resp->which_response_type = jpttm_gesture_action_Response_get_actions_tag;
+    resp->response_type.get_actions = result;
+    return 0;
+}
+
+static int handle_set_action(const jpttm_gesture_action_SetActionRequest *req,
+                             jpttm_gesture_action_Response *resp) {
+    if (!req->has_action) {
+        LOG_WRN("SetAction without an action");
+        return -EINVAL;
+    }
+
+    const struct zmk_gesture_action_entry entry = {
+        .behavior_local_id = (zmk_behavior_local_id_t)req->action.behavior_id,
+        .param1 = req->action.param1,
+        .param2 = req->action.param2,
+    };
+
+    int rc = zmk_gesture_action_set((uint8_t)req->action.slot, &entry, req->persist);
+    if (rc == -EINVAL) {
+        LOG_WRN("SetAction for out-of-range slot %u", req->action.slot);
+        return rc;
+    }
+
+    jpttm_gesture_action_SetActionResponse result = jpttm_gesture_action_SetActionResponse_init_zero;
+    result.success = (rc == 0);
+
+    resp->which_response_type = jpttm_gesture_action_Response_set_action_tag;
+    resp->response_type.set_action = result;
+    return 0;
+}
+
+static int handle_reset_action(const jpttm_gesture_action_ResetActionRequest *req,
+                               jpttm_gesture_action_Response *resp) {
+    int rc = zmk_gesture_action_reset((uint8_t)req->slot, req->persist);
+    if (rc == -EINVAL) {
+        LOG_WRN("ResetAction for out-of-range slot %u", req->slot);
+        return rc;
+    }
+
+    jpttm_gesture_action_ResetActionResponse result =
+        jpttm_gesture_action_ResetActionResponse_init_zero;
+    result.success = (rc == 0);
+
+    resp->which_response_type = jpttm_gesture_action_Response_reset_action_tag;
+    resp->response_type.reset_action = result;
+    return 0;
+}
+
+static void fail(jpttm_gesture_action_Response *resp, const char *message) {
+    jpttm_gesture_action_ErrorResponse err = jpttm_gesture_action_ErrorResponse_init_zero;
+    snprintf(err.message, sizeof(err.message), "%s", message);
+    resp->which_response_type = jpttm_gesture_action_Response_error_tag;
+    resp->response_type.error = err;
+}
+
+static bool gesture_action_rpc_handle_request(const zmk_custom_CallRequest *raw_request,
+                                              pb_callback_t *encode_response) {
+    jpttm_gesture_action_Response *resp =
+        ZMK_RPC_CUSTOM_SUBSYSTEM_RESPONSE_BUFFER_ALLOCATE(jpttm__gesture_action, encode_response);
+
+    jpttm_gesture_action_Request req = jpttm_gesture_action_Request_init_zero;
+    pb_istream_t stream =
+        pb_istream_from_buffer(raw_request->payload.bytes, raw_request->payload.size);
+
+    if (!pb_decode(&stream, jpttm_gesture_action_Request_fields, &req)) {
+        LOG_WRN("Failed to decode gesture action request: %s", PB_GET_ERROR(&stream));
+        fail(resp, "Failed to decode request");
+        return true;
+    }
+
+    int rc;
+    switch (req.which_request_type) {
+    case jpttm_gesture_action_Request_get_actions_tag:
+        rc = handle_get_actions(&req.request_type.get_actions, resp);
+        break;
+    case jpttm_gesture_action_Request_set_action_tag:
+        rc = handle_set_action(&req.request_type.set_action, resp);
+        break;
+    case jpttm_gesture_action_Request_reset_action_tag:
+        rc = handle_reset_action(&req.request_type.reset_action, resp);
+        break;
+    default:
+        LOG_WRN("Unsupported gesture action request type: %d", req.which_request_type);
+        fail(resp, "Unsupported request");
+        return true;
+    }
+
+    if (rc == -EINVAL) {
+        fail(resp, "Slot out of range");
+    } else if (rc != 0) {
+        fail(resp, "Failed to process request");
+    }
+
+    return true;
+}

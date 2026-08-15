@@ -1,0 +1,4 @@
+# One Action encodes to at most ~24 bytes, so a page of 8 stays well inside a
+# 256-byte RPC response buffer.
+jpttm.gesture_action.GetActionsResponse.actions max_count:8
+jpttm.gesture_action.ErrorResponse.message      max_size:64

@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package jpttm.gesture_action;
+
+// One slot's assignment. behavior_id is a ZMK behavior local ID; 0 means the
+// slot has nothing stored and falls back to its devicetree default.
+message Action {
+    uint32 slot = 1;
+    uint32 behavior_id = 2;
+    uint32 param1 = 3;
+    uint32 param2 = 4;
+}
+
+// Paged, because the whole slot table does not fit in one RPC response on a
+// build with modest ZMK_STUDIO_RPC_TX_BUF_SIZE. Ask for a window; repeat until
+// start_slot + returned count reaches total_slots.
+message GetActionsRequest {
+    uint32 start_slot = 1;
+}
+
+message GetActionsResponse {
+    uint32 total_slots = 1;
+    uint32 start_slot = 2;
+    repeated Action actions = 3;
+}
+
+message SetActionRequest {
+    Action action = 1;
+    // Leave false to try a binding out without spending a flash write.
+    bool persist = 2;
+}
+
+message SetActionResponse {
+    bool success = 1;
+}
+
+// Drops the stored assignment so the slot returns to its devicetree default.
+message ResetActionRequest {
+    uint32 slot = 1;
+    bool persist = 2;
+}
+
+message ResetActionResponse {
+    bool success = 1;
+}
+
+message Request {
+    oneof request_type {
+        GetActionsRequest get_actions = 1;
+        SetActionRequest set_action = 2;
+        ResetActionRequest reset_action = 3;
+    }
+}
+
+message ErrorResponse {
+    string message = 1;
+}
+
+message Response {
+    oneof response_type {
+        ErrorResponse error = 1;
+        GetActionsResponse get_actions = 2;
+        SetActionResponse set_action = 3;
+        ResetActionResponse reset_action = 4;
+    }
+}
