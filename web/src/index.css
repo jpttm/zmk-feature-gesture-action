@@ -332,3 +332,52 @@ button.ghost.on {
   font-size: 0.8em;
   color: var(--muted);
 }
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 1rem;
+}
+
+button.tab {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  padding: 0.4rem 0.8rem;
+  margin-bottom: -1px;
+}
+
+button.tab.on {
+  color: var(--fg);
+  border-color: var(--line);
+  background: var(--bg);
+}
+
+fieldset {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin: 0 0 1rem;
+}
+
+legend {
+  font-size: 0.8rem;
+  color: var(--muted);
+  padding: 0 0.35rem;
+}
+
+.slotCell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.slotCell .editor {
+  flex-basis: 100%;
+}

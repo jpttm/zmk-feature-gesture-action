@@ -123,6 +123,19 @@ export const STRINGS = {
     ja: "キーボードから Key Press ビヘイビアが見つかりません。",
     en: "The keyboard does not report a Key Press behaviour.",
   },
+  groupTab: { ja: "グループ", en: "Group" },
+  appliesTo: { ja: "適用先レイヤー", en: "Applies to layers" },
+  appliesToHint: {
+    ja: "このグループのジェスチャーが効くレイヤーを選びます。複数選択できます。",
+    en: "Which layers this group's gestures respond on. Several can be selected.",
+  },
+  layerWord: { ja: "レイヤー", en: "Layer" },
+  unassigned: { ja: "未割り当て", en: "not assigned" },
+  saveLayers: { ja: "適用先を保存", en: "Save layers" },
+  groupsUnsupported: {
+    ja: "このファームウェアはレイヤー割り当ての変更に未対応です。",
+    en: "This firmware does not support changing layer assignment.",
+  },
   source: { ja: "ソース", en: "Source" },
   builtOn: { ja: "使用ライブラリ:", en: "built on" },
 

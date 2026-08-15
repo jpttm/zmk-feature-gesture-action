@@ -1,1 +1,1 @@
-{"root":["./src/app.tsx","./src/gestureactions.tsx","./src/gestureactioncodec.ts","./src/i18n.tsx","./src/keycodes.ts","./src/main.tsx","./src/presets.ts","./src/usebehaviors.ts","./vite.config.ts"],"version":"5.9.3"}
+{"root":["./src/app.tsx","./src/gestureactions.tsx","./src/grouptabs.tsx","./src/gestureactioncodec.ts","./src/i18n.tsx","./src/keycodes.ts","./src/main.tsx","./src/presets.ts","./src/usebehaviors.ts","./vite.config.ts"],"version":"5.9.3"}

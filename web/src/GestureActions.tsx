@@ -21,6 +21,8 @@ import {
 } from "./keycodes";
 import { useLang, useT } from "./i18n";
 import { PRESETS, type Preset } from "./presets";
+import { GroupTabs } from "./GroupTabs";
+import type { Group } from "./gestureActionCodec";
 
 export function GestureActions() {
   const t = useT();
@@ -41,6 +43,7 @@ export function GestureActions() {
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<number | null>(null);
   const [preview, setPreview] = useState<Preset | null>(null);
+  const [groups, setGroups] = useState<Group[]>([]);
 
   const refresh = useCallback(async () => {
     setBusy(true);
@@ -96,6 +99,11 @@ export function GestureActions() {
 
       setNames(collectedNames);
       setNamesError(nameFailure);
+
+      // Groups are optional: firmware without the layer-groups RPC still works,
+      // it just cannot move a set between layers.
+      const groupRes = await call({ kind: "getGroups" });
+      setGroups(groupRes?.kind === "getGroups" ? groupRes.groups : []);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -106,6 +114,28 @@ export function GestureActions() {
   useEffect(() => {
     if (ready) void refresh();
   }, [ready, refresh]);
+
+  const setGroupLayers = useCallback(
+    async (index: number, mask: number) => {
+      setBusy(true);
+      setError(null);
+      try {
+        const res = await call({
+          kind: "setGroupLayers",
+          index,
+          activeLayers: mask,
+          persist: true,
+        });
+        if (!res) throw new Error(t("noResponse"));
+        if (res.kind === "error") throw new Error(res.message);
+        await refresh();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err));
+        setBusy(false);
+      }
+    },
+    [call, refresh, t],
+  );
 
   const apply = useCallback(
     async (request: Request) => {
@@ -192,68 +222,49 @@ export function GestureActions() {
         onApply={applyPreset}
       />
 
-      <table>
-        <thead>
-          <tr>
-            <th className="slotCol">{t("slot")}</th>
-            <th>{t("assignment")}</th>
-            <th />
-          </tr>
-        </thead>
-        <tbody>
-          {actions.flatMap((action) => {
-            const row = (
-              <tr key={action.slot}>
-                <td className="slotCol">{names[action.slot] || action.slot}</td>
-                <td>
-                  {action.behaviorId === UNSET ? (
-                    <span className="muted">{t("fromFirmware")}</span>
-                  ) : isKeyPress(nameFor(action.behaviorId)) ? (
-                    <code>{describeKeycode(action.param1)}</code>
-                  ) : (
-                    <code>
-                      {nameFor(action.behaviorId)} {action.param1} {action.param2}
-                    </code>
-                  )}
-                </td>
-                <td className="right">
-                  <button
-                    className="ghost"
-                    disabled={busy}
-                    onClick={() =>
-                      setEditing(editing === action.slot ? null : action.slot)
-                    }
-                  >
-                    {editing === action.slot ? t("cancel") : t("edit")}
-                  </button>
-                </td>
-              </tr>
-            );
-
-            if (editing !== action.slot) {
-              return [row];
-            }
-
-            // The editor is its own row directly under the one being edited,
-            // so the controls sit next to the thing they change.
-            return [
-              row,
-              <tr key={`${action.slot}-editor`}>
-                <td colSpan={3} className="editorCell">
-                  <Editor
-                    slot={action.slot}
-                    label={names[action.slot] || `${t("slot")} ${action.slot}`}
-                    current={action}
-                    behaviors={behaviors}
-                    busy={busy}
-                    onApply={apply}
-                  />
-                </td>
-              </tr>,
-            ];
-          })}
-        </tbody>
-      </table>
+      <GroupTabs
+        groups={groups}
+        actions={actions}
+        names={names}
+        busy={busy}
+        onSetLayers={setGroupLayers}
+        renderSlot={(slot) => {
+          const action = actions.find((x) => x.slot === slot);
+          if (!action) return null;
+          return (
+            <div className="slotCell">
+              <span>
+                {action.behaviorId === UNSET ? (
+                  <span className="muted">{t("fromFirmware")}</span>
+                ) : isKeyPress(nameFor(action.behaviorId)) ? (
+                  <code>{describeKeycode(action.param1)}</code>
+                ) : (
+                  <code>
+                    {nameFor(action.behaviorId)} {action.param1} {action.param2}
+                  </code>
+                )}
+              </span>
+              <button
+                className="ghost"
+                disabled={busy}
+                onClick={() => setEditing(editing === slot ? null : slot)}
+              >
+                {editing === slot ? t("cancel") : t("edit")}
+              </button>
+              {editing === slot && (
+                <Editor
+                  slot={slot}
+                  label={names[slot] || `${t("slot")} ${slot}`}
+                  current={action}
+                  behaviors={behaviors}
+                  busy={busy}
+                  onApply={apply}
+                />
+              )}
+            </div>
+          );
+        }}
+      />
 
       <div className="row">
         <button className="ghost" disabled={busy} onClick={() => void refresh()}>

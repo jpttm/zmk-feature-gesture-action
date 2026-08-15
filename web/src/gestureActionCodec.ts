@@ -16,6 +16,12 @@ export const SUBSYSTEM_ID = "jpttm__gesture_action";
 /** Empty slot: nothing stored, so the devicetree default runs instead. */
 export const UNSET = 0;
 
+export interface Group {
+  index: number;
+  name: string;
+  activeLayers: number;
+}
+
 export interface Action {
   slot: number;
   behaviorId: number;
@@ -26,6 +32,8 @@ export interface Action {
 export type Request =
   | { kind: "getActions"; startSlot: number }
   | { kind: "getSlotNames"; startSlot: number }
+  | { kind: "getGroups" }
+  | { kind: "setGroupLayers"; index: number; activeLayers: number; persist: boolean }
   | { kind: "setAction"; action: Action; persist: boolean }
   | { kind: "resetAction"; slot: number; persist: boolean };
 
@@ -35,6 +43,8 @@ export type Response =
   | { kind: "setAction"; success: boolean }
   | { kind: "resetAction"; success: boolean }
   | { kind: "getSlotNames"; totalSlots: number; startSlot: number; names: string[] }
+  | { kind: "getGroups"; groups: Group[] }
+  | { kind: "setGroupLayers"; success: boolean }
   | { kind: "unknown" };
 
 const WIRE_VARINT = 0;
@@ -106,6 +116,19 @@ export function encodeRequest(request: Request): Uint8Array {
       const inner = Writer.create();
       if (request.startSlot) inner.uint32(tag(1, WIRE_VARINT)).uint32(request.startSlot);
       w.uint32(tag(4, WIRE_LEN)).bytes(inner.finish());
+      break;
+    }
+    case "getGroups": {
+      w.uint32(tag(5, WIRE_LEN)).bytes(new Uint8Array(0));
+      break;
+    }
+    case "setGroupLayers": {
+      const inner = Writer.create();
+      if (request.index) inner.uint32(tag(1, WIRE_VARINT)).uint32(request.index);
+      if (request.activeLayers)
+        inner.uint32(tag(2, WIRE_VARINT)).uint32(request.activeLayers);
+      if (request.persist) inner.uint32(tag(3, WIRE_VARINT)).bool(true);
+      w.uint32(tag(6, WIRE_LEN)).bytes(inner.finish());
       break;
     }
   }
@@ -197,6 +220,47 @@ export function decodeResponse(payload: Uint8Array): Response {
           }
         }
         result = { kind: "getSlotNames", totalSlots, startSlot, names };
+        break;
+      }
+      case 6: {
+        const groups: Group[] = [];
+        while (r.pos < innerEnd) {
+          const it = r.uint32();
+          if (it >>> 3 === 1) {
+            const groupEnd = r.uint32() + r.pos;
+            const group: Group = { index: 0, name: "", activeLayers: 0 };
+            while (r.pos < groupEnd) {
+              const gt = r.uint32();
+              switch (gt >>> 3) {
+                case 1:
+                  group.index = r.uint32();
+                  break;
+                case 2:
+                  group.name = r.string();
+                  break;
+                case 3:
+                  group.activeLayers = r.uint32();
+                  break;
+                default:
+                  r.skipType(gt & 7);
+              }
+            }
+            groups.push(group);
+          } else {
+            r.skipType(it & 7);
+          }
+        }
+        result = { kind: "getGroups", groups };
+        break;
+      }
+      case 7: {
+        let success = false;
+        while (r.pos < innerEnd) {
+          const it = r.uint32();
+          if (it >>> 3 === 1) success = r.bool();
+          else r.skipType(it & 7);
+        }
+        result = { kind: "setGroupLayers", success };
         break;
       }
       default:
