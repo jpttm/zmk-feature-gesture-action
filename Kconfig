@@ -1,0 +1,25 @@
+# Copyright (c) 2026 jpttm
+# SPDX-License-Identifier: MIT
+
+config ZMK_GESTURE_ACTION
+    bool "Enable runtime-configurable gesture actions"
+    select ZMK_BEHAVIOR_LOCAL_IDS
+    depends on SETTINGS
+    help
+      Provides &gesture_action <slot>, a behaviour whose target binding is
+      stored in settings and can be changed at runtime. Intended for mouse
+      gestures, which would otherwise have to consume runtime macro slots that
+      users need for ordinary macros.
+
+if ZMK_GESTURE_ACTION
+
+config ZMK_GESTURE_ACTION_COUNT
+    int "Number of gesture action slots"
+    default 32
+    range 1 64
+    help
+      How many independently assignable actions exist. Each slot costs a
+      handful of bytes of RAM and one settings entry, so this can be generous
+      compared to runtime macro slots.
+
+endif

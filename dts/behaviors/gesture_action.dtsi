@@ -1,0 +1,15 @@
+/*
+ * Copyright (c) 2026 jpttm
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+/ {
+    behaviors {
+        gesture_action: gesture_action {
+            compatible = "jpttm,zmk-behavior-gesture-action";
+            #binding-cells = <1>;
+            display-name = "Gesture Action";
+        };
+    };
+};

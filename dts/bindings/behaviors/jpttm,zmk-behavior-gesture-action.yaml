@@ -1,0 +1,26 @@
+# Copyright (c) 2026 jpttm
+# SPDX-License-Identifier: MIT
+
+description: |
+  Behaviour whose target binding is held in settings and can be reassigned at
+  runtime. Takes a slot number as its parameter.
+
+  Slots with no stored value fall back to the entry at the same index in
+  default-bindings, so a freshly flashed board behaves usefully before it is
+  ever configured.
+
+compatible: "jpttm,zmk-behavior-gesture-action"
+
+include: one_param.yaml
+
+properties:
+  default-bindings:
+    type: phandle-array
+    description: |
+      Compile-time fallback for each slot, in slot order. Entry 0 is the
+      fallback for slot 0, and so on. May be shorter than
+      ZMK_GESTURE_ACTION_COUNT; slots past the end simply do nothing until
+      assigned.
+
+  display-name:
+    type: string

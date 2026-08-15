@@ -1,0 +1,6 @@
+name: zmk-feature-gesture-action
+build:
+  cmake: .
+  kconfig: Kconfig
+  settings:
+    dts_root: .
