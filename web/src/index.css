@@ -291,3 +291,21 @@ td.editorCell {
 td.editorCell .editor {
   margin-top: 0;
 }
+
+.presets {
+  margin-bottom: 1.5rem;
+}
+
+.presetRow {
+  align-items: center;
+}
+
+button.ghost.on {
+  background: var(--accent);
+  color: #fff;
+}
+
+.previewTable td {
+  padding: 0.25rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+}

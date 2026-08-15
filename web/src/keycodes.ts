@@ -30,6 +30,7 @@ export type KeycodeGroupKey =
   | "keysNavigation"
   | "keysLetters"
   | "keysNumbers"
+  | "keysSymbols"
   | "keysFunction"
   | "keysMedia";
 
@@ -86,6 +87,22 @@ export const KEYCODE_GROUPS: { labelKey: KeycodeGroupKey; keys: Keycode[] }[] = 
       key("End", 0x4d),
       key("Page Up", 0x4b),
       key("Page Down", 0x4e),
+    ],
+  },
+  {
+    labelKey: "keysSymbols",
+    keys: [
+      key("[", 0x2f),
+      key("]", 0x30),
+      key("\\", 0x31),
+      key(";", 0x33),
+      key("'", 0x34),
+      key("`", 0x35),
+      key(",", 0x36),
+      key(".", 0x37),
+      key("/", 0x38),
+      key("-", 0x2d),
+      key("=", 0x2e),
     ],
   },
   { labelKey: "keysLetters", keys: letters },

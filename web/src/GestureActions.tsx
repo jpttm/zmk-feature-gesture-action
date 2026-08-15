@@ -19,7 +19,8 @@ import {
   packKeycode,
   splitKeycode,
 } from "./keycodes";
-import { useT } from "./i18n";
+import { useLang, useT } from "./i18n";
+import { PRESETS, type Preset } from "./presets";
 
 export function GestureActions() {
   const t = useT();
@@ -39,6 +40,7 @@ export function GestureActions() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<number | null>(null);
+  const [preview, setPreview] = useState<Preset | null>(null);
 
   const refresh = useCallback(async () => {
     setBusy(true);
@@ -123,6 +125,37 @@ export function GestureActions() {
     [call, refresh, t],
   );
 
+  const applyPreset = useCallback(
+    async (preset: Preset, keyPressId: number) => {
+      setBusy(true);
+      setError(null);
+      try {
+        // One RPC per slot: the protocol has no bulk write, and over BLE this
+        // takes a moment - hence the busy state rather than silent waiting.
+        for (const item of preset.actions) {
+          const res = await call({
+            kind: "setAction",
+            action: {
+              slot: item.slot,
+              behaviorId: keyPressId,
+              param1: item.keycode,
+              param2: 0,
+            },
+            persist: true,
+          });
+          if (!res) throw new Error(t("noResponse"));
+          if (res.kind === "error") throw new Error(res.message);
+        }
+        setPreview(null);
+        await refresh();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err));
+        setBusy(false);
+      }
+    },
+    [call, refresh, t],
+  );
+
   if (!ready) {
     return (
       <section>
@@ -148,6 +181,15 @@ export function GestureActions() {
           {t("namesFallback")}（{namesError}）
         </p>
       )}
+
+      <Presets
+        total={total}
+        busy={busy}
+        keyPressId={behaviors.find((b) => isKeyPress(b.displayName))?.id ?? null}
+        preview={preview}
+        onPreview={setPreview}
+        onApply={applyPreset}
+      />
 
       <table>
         <thead>
@@ -218,6 +260,87 @@ export function GestureActions() {
         </button>
       </div>
     </section>
+  );
+}
+
+function Presets({
+  total,
+  busy,
+  keyPressId,
+  preview,
+  onPreview,
+  onApply,
+}: {
+  total: number;
+  busy: boolean;
+  keyPressId: number | null;
+  preview: Preset | null;
+  onPreview: (preset: Preset | null) => void;
+  onApply: (preset: Preset, keyPressId: number) => void;
+}) {
+  const t = useT();
+  const { lang } = useLang();
+
+  if (keyPressId === null) {
+    return <p className="muted small">{t("presetNoKeyPress")}</p>;
+  }
+
+  return (
+    <div className="presets">
+      <div className="row presetRow">
+        <span className="muted small">{t("presets")}:</span>
+        {PRESETS.map((preset) => (
+          <button
+            key={preset.id}
+            className={preview?.id === preset.id ? "ghost on" : "ghost"}
+            disabled={busy}
+            onClick={() => onPreview(preview?.id === preset.id ? null : preset)}
+          >
+            {preset.name[lang]}
+          </button>
+        ))}
+      </div>
+      <p className="muted small">{t("presetsHint")}</p>
+
+      {preview && (
+        <div className="editor">
+          <h3>
+            {preview.name[lang]} — {t("presetPreview")}
+          </h3>
+
+          {/* The preset assumes a 16-slot layout; on anything else the
+              preview is where a mismatch becomes visible. */}
+          {total !== preview.actions.length && (
+            <p className="warn small">{t("presetMismatch")}</p>
+          )}
+
+          <table className="previewTable">
+            <tbody>
+              {preview.actions.map((item) => (
+                <tr key={item.slot}>
+                  <td className="slotCol">{item.slot}</td>
+                  <td>{item.label[lang]}</td>
+                  <td>
+                    <code>{describeKeycode(item.keycode)}</code>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <p className="muted small">{t("presetOverwrite")}</p>
+
+          <div className="row">
+            <button disabled={busy} onClick={() => onApply(preview, keyPressId)}>
+              {busy ? t("presetApplying") : t("presetApply")}
+            </button>
+            <button className="ghost" disabled={busy} onClick={() => onPreview(null)}>
+              {t("presetCancel")}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

@@ -96,6 +96,27 @@ export const STRINGS = {
     en: "this firmware predates slot names",
   },
 
+  presets: { ja: "おすすめ設定", en: "Presets" },
+  presetsHint: {
+    ja: "OS に合わせた一括設定です。適用前に内容を確認できます。",
+    en: "Bulk settings for your OS. You can review them before applying.",
+  },
+  presetPreview: { ja: "適用される内容", en: "What will be applied" },
+  presetApply: { ja: "この内容で一括設定", en: "Apply these" },
+  presetCancel: { ja: "やめる", en: "Cancel" },
+  presetApplying: { ja: "設定中…", en: "Applying…" },
+  presetOverwrite: {
+    ja: "現在の割り当ては上書きされます。",
+    en: "This overwrites the current assignments.",
+  },
+  presetMismatch: {
+    ja: "このプリセットはスロット16個の構成向けです。お使いのキーボードでは意図しない割り当てになる可能性があります。内容をよく確認してください。",
+    en: "This preset targets a 16-slot layout. On this keyboard it may land somewhere unintended — check the list carefully.",
+  },
+  presetNoKeyPress: {
+    ja: "キーボードから Key Press ビヘイビアが見つかりません。",
+    en: "The keyboard does not report a Key Press behaviour.",
+  },
   source: { ja: "ソース", en: "Source" },
   builtOn: { ja: "使用ライブラリ:", en: "built on" },
 
@@ -103,6 +124,7 @@ export const STRINGS = {
   keysNavigation: { ja: "移動", en: "Navigation" },
   keysLetters: { ja: "英字", en: "Letters" },
   keysNumbers: { ja: "数字", en: "Numbers" },
+  keysSymbols: { ja: "記号", en: "Symbols" },
   keysFunction: { ja: "ファンクション", en: "Function" },
   keysMedia: { ja: "メディア", en: "Media" },
 } satisfies Record<string, Entry>;
