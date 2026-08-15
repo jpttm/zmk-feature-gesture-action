@@ -16,6 +16,10 @@ include: one_param.yaml
 properties:
   default-bindings:
     type: phandle-array
+    # Without this, devicetree derives "#default-binding-cells" from the
+    # property name and rejects every behaviour, which only declares
+    # "#binding-cells".
+    specifier-space: binding
     description: |
       Compile-time fallback for each slot, in slot order. Entry 0 is the
       fallback for slot 0, and so on. May be shorter than
