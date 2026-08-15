@@ -1,0 +1,177 @@
+:root {
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --accent: #2563eb;
+  --ok: #15803d;
+  --no: #b91c1c;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16181d;
+    --fg: #e8e8e8;
+    --muted: #9aa1ac;
+    --line: #2c313a;
+    --accent: #60a5fa;
+    --ok: #4ade80;
+    --no: #f87171;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+main {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0 0 0.25rem;
+}
+
+h2 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0 0 0.75rem;
+}
+
+.lede {
+  color: var(--muted);
+  margin: 0 0 2rem;
+}
+
+section {
+  border-top: 1px solid var(--line);
+  padding: 1.5rem 0;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+button {
+  font: inherit;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+ul.support {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.badge {
+  display: inline-block;
+  min-width: 2.4rem;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  margin-right: 0.5rem;
+}
+
+.badge.ok {
+  color: var(--ok);
+  border: 1px solid var(--ok);
+}
+
+.badge.no {
+  color: var(--no);
+  border: 1px solid var(--no);
+}
+
+.warn {
+  color: var(--no);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+dl {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 0.35rem 1rem;
+  margin: 0;
+}
+
+dt {
+  color: var(--muted);
+}
+
+dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+td.num {
+  color: var(--muted);
+  width: 4rem;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+}
+
+footer {
+  border-top: 1px solid var(--line);
+  padding-top: 1.5rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+a {
+  color: var(--accent);
+}

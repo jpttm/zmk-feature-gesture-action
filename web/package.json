@@ -1,0 +1,28 @@
+{
+  "name": "zmk-gesture-action-web",
+  "private": true,
+  "version": "0.0.1",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@cormoran/zmk-studio-react-hook": "github:cormoran/react-zmk-studio",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/w3c-web-serial": "^1.0.8",
+    "@types/web-bluetooth": "^0.0.21",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.0",
+    "run-script-os": "^1.1.6"
+  }
+}
