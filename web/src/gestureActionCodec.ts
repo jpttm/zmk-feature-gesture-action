@@ -25,6 +25,7 @@ export interface Action {
 
 export type Request =
   | { kind: "getActions"; startSlot: number }
+  | { kind: "getSlotNames"; startSlot: number }
   | { kind: "setAction"; action: Action; persist: boolean }
   | { kind: "resetAction"; slot: number; persist: boolean };
 
@@ -33,6 +34,7 @@ export type Response =
   | { kind: "getActions"; totalSlots: number; startSlot: number; actions: Action[] }
   | { kind: "setAction"; success: boolean }
   | { kind: "resetAction"; success: boolean }
+  | { kind: "getSlotNames"; totalSlots: number; startSlot: number; names: string[] }
   | { kind: "unknown" };
 
 const WIRE_VARINT = 0;
@@ -98,6 +100,12 @@ export function encodeRequest(request: Request): Uint8Array {
       if (request.slot) inner.uint32(tag(1, WIRE_VARINT)).uint32(request.slot);
       if (request.persist) inner.uint32(tag(2, WIRE_VARINT)).bool(true);
       w.uint32(tag(3, WIRE_LEN)).bytes(inner.finish());
+      break;
+    }
+    case "getSlotNames": {
+      const inner = Writer.create();
+      if (request.startSlot) inner.uint32(tag(1, WIRE_VARINT)).uint32(request.startSlot);
+      w.uint32(tag(4, WIRE_LEN)).bytes(inner.finish());
       break;
     }
   }
@@ -166,6 +174,29 @@ export function decodeResponse(payload: Uint8Array): Response {
           else r.skipType(it & 7);
         }
         result = { kind: field === 3 ? "setAction" : "resetAction", success };
+        break;
+      }
+      case 5: {
+        let totalSlots = 0;
+        let startSlot = 0;
+        const names: string[] = [];
+        while (r.pos < innerEnd) {
+          const it = r.uint32();
+          switch (it >>> 3) {
+            case 1:
+              totalSlots = r.uint32();
+              break;
+            case 2:
+              startSlot = r.uint32();
+              break;
+            case 3:
+              names.push(r.string());
+              break;
+            default:
+              r.skipType(it & 7);
+          }
+        }
+        result = { kind: "getSlotNames", totalSlots, startSlot, names };
         break;
       }
       default:

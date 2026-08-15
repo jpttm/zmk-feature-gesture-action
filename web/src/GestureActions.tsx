@@ -12,6 +12,13 @@ import {
   type Response,
 } from "./gestureActionCodec";
 import { useBehaviors } from "./useBehaviors";
+import {
+  KEYCODE_GROUPS,
+  MODIFIERS,
+  describeKeycode,
+  packKeycode,
+  splitKeycode,
+} from "./keycodes";
 
 export function GestureActions() {
   const zmk = useContext(ZMKAppContext);
@@ -24,6 +31,7 @@ export function GestureActions() {
   );
 
   const [actions, setActions] = useState<Action[]>([]);
+  const [names, setNames] = useState<string[]>([]);
   const [total, setTotal] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,6 +62,19 @@ export function GestureActions() {
 
       setTotal(totalSlots);
       setActions(collected);
+
+      // Names are fixed at build time, so this only needs doing once per
+      // connection - but it is cheap enough to redo alongside a reload.
+      const collectedNames: string[] = [];
+      startSlot = 0;
+      for (;;) {
+        const res = await call({ kind: "getSlotNames", startSlot });
+        if (!res || res.kind !== "getSlotNames") break;
+        collectedNames.push(...res.names);
+        if (res.names.length === 0 || collectedNames.length >= res.totalSlots) break;
+        startSlot = collectedNames.length;
+      }
+      setNames(collectedNames);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -118,10 +139,12 @@ export function GestureActions() {
         <tbody>
           {actions.map((action) => (
             <tr key={action.slot}>
-              <td className="num">{action.slot}</td>
+              <td className="num">{names[action.slot] || action.slot}</td>
               <td>
                 {action.behaviorId === UNSET ? (
                   <span className="muted">default (from firmware)</span>
+                ) : isKeyPress(nameFor(action.behaviorId)) ? (
+                  <code>{describeKeycode(action.param1)}</code>
                 ) : (
                   <code>
                     {nameFor(action.behaviorId)} {action.param1} {action.param2}
@@ -147,6 +170,7 @@ export function GestureActions() {
       {editing !== null && (
         <Editor
           slot={editing}
+          label={names[editing] || `Slot ${editing}`}
           current={actions.find((a) => a.slot === editing)}
           behaviors={behaviors}
           busy={busy}
@@ -163,14 +187,21 @@ export function GestureActions() {
   );
 }
 
+/** ZMK's key-press behaviour is the one worth giving a real picker. */
+function isKeyPress(displayName: string): boolean {
+  return displayName.toLowerCase().replace(/[\s_-]/g, "") === "keypress";
+}
+
 function Editor({
   slot,
+  label,
   current,
   behaviors,
   busy,
   onApply,
 }: {
   slot: number;
+  label: string;
   current: Action | undefined;
   behaviors: { id: number; displayName: string }[];
   busy: boolean;
@@ -181,10 +212,14 @@ function Editor({
   const [param2, setParam2] = useState(current?.param2 ?? 0);
 
   const action: Action = { slot, behaviorId, param1, param2 };
+  const keyPress = isKeyPress(
+    behaviors.find((b) => b.id === behaviorId)?.displayName ?? "",
+  );
+  const { mods, base } = splitKeycode(param1);
 
   return (
     <div className="editor">
-      <h3>Slot {slot}</h3>
+      <h3>{label}</h3>
 
       <label>
         Behaviour
@@ -201,31 +236,77 @@ function Editor({
         </select>
       </label>
 
-      <div className="row">
-        <label>
-          param1
-          <input
-            type="number"
-            min={0}
-            value={param1}
-            onChange={(e) => setParam1(Number(e.target.value))}
-          />
-        </label>
-        <label>
-          param2
-          <input
-            type="number"
-            min={0}
-            value={param2}
-            onChange={(e) => setParam2(Number(e.target.value))}
-          />
-        </label>
-      </div>
+      {keyPress ? (
+        <>
+          <div className="mods">
+            {MODIFIERS.map((m) => (
+              <label key={m.label} className="check">
+                <input
+                  type="checkbox"
+                  checked={(mods & m.bit) !== 0}
+                  onChange={(e) =>
+                    setParam1(
+                      packKeycode(
+                        e.target.checked ? mods | m.bit : mods & ~m.bit,
+                        base,
+                      ),
+                    )
+                  }
+                />
+                {m.label}
+              </label>
+            ))}
+          </div>
 
-      <p className="muted small">
-        Parameters are raw ZMK binding values — for <code>Key Press</code>,
-        param1 is the keycode.
-      </p>
+          <label>
+            Key
+            <select
+              value={base}
+              onChange={(e) => setParam1(packKeycode(mods, Number(e.target.value)))}
+            >
+              <option value={0}>— pick a key —</option>
+              {KEYCODE_GROUPS.map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                  {group.keys.map((k) => (
+                    <option key={k.value} value={k.value}>
+                      {k.name}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+          </label>
+
+          <p className="muted small">
+            Sends <code>{describeKeycode(param1)}</code>. Anything missing from
+            the list can be entered as a raw value below.
+          </p>
+        </>
+      ) : null}
+
+      <details>
+        <summary className="muted small">Raw parameters</summary>
+        <div className="row">
+          <label>
+            param1
+            <input
+              type="number"
+              min={0}
+              value={param1}
+              onChange={(e) => setParam1(Number(e.target.value))}
+            />
+          </label>
+          <label>
+            param2
+            <input
+              type="number"
+              min={0}
+              value={param2}
+              onChange={(e) => setParam2(Number(e.target.value))}
+            />
+          </label>
+        </div>
+      </details>
 
       <div className="row">
         <button

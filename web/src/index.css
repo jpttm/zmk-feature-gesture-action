@@ -222,3 +222,20 @@ input[type="number"] {
 .small {
   font-size: 0.8rem;
 }
+
+.mods {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+label.check {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--fg);
+}
+
+details summary {
+  cursor: pointer;
+}
