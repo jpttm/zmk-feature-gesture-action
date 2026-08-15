@@ -3,13 +3,20 @@
 
 config ZMK_GESTURE_ACTION
     bool "Enable runtime-configurable gesture actions"
-    select ZMK_BEHAVIOR_LOCAL_IDS
+    default y
+    depends on DT_HAS_JPTTM_ZMK_BEHAVIOR_GESTURE_ACTION_ENABLED
     depends on SETTINGS
+    select ZMK_BEHAVIOR_LOCAL_IDS
     help
       Provides &gesture_action <slot>, a behaviour whose target binding is
       stored in settings and can be changed at runtime. Intended for mouse
       gestures, which would otherwise have to consume runtime macro slots that
       users need for ordinary macros.
+
+      Enabled automatically once a gesture-action node exists in the
+      devicetree, so including behaviors/gesture_action.dtsi is all that is
+      needed. Without that, the node would compile in with no driver behind it
+      and every gesture would silently do nothing.
 
 if ZMK_GESTURE_ACTION
 
