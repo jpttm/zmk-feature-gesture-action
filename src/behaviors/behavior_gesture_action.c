@@ -25,6 +25,9 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #define SLOT_COUNT CONFIG_ZMK_GESTURE_ACTION_COUNT
 #define SETTINGS_PREFIX "ga"
+/* Slot names come from the (single) devicetree node; look it up by name rather
+ * than threading a device pointer through the public API. */
+#define GESTURE_ACTION_DEV_NAME DEVICE_DT_NAME(DT_DRV_INST(0))
 
 /* A slot's compile-time fallback, straight out of default-bindings. Kept as a
  * device name rather than a local ID so it needs no resolution at init time. */
@@ -37,6 +40,8 @@ struct default_binding {
 struct behavior_gesture_action_config {
     const struct default_binding *defaults;
     size_t defaults_len;
+    const char *const *slot_names;
+    size_t slot_names_len;
 };
 
 /* Slots live here rather than in per-instance data: the settings keys are
@@ -90,6 +95,20 @@ static int save_slot(uint8_t slot) {
 }
 
 uint8_t zmk_gesture_action_count(void) { return SLOT_COUNT; }
+
+const char *zmk_gesture_action_name(uint8_t slot) {
+    const struct device *dev = zmk_behavior_get_binding(GESTURE_ACTION_DEV_NAME);
+    if (!dev) {
+        return NULL;
+    }
+
+    const struct behavior_gesture_action_config *config = dev->config;
+    if (slot >= config->slot_names_len) {
+        return NULL;
+    }
+
+    return config->slot_names[slot];
+}
 
 int zmk_gesture_action_get(uint8_t slot, struct zmk_gesture_action_entry *out) {
     if (slot >= SLOT_COUNT || out == NULL) {

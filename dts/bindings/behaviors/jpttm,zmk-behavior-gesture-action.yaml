@@ -26,5 +26,13 @@ properties:
       ZMK_GESTURE_ACTION_COUNT; slots past the end simply do nothing until
       assigned.
 
+  slot-names:
+    type: string-array
+    description: |
+      Label for each slot, in slot order, shown by configuration UIs in place of
+      a bare number. Keep them short - they are carried over RPC with a 24-byte
+      cap. May be shorter than the slot count; unnamed slots fall back to their
+      number.
+
   display-name:
     type: string

@@ -2,3 +2,5 @@
 # 256-byte RPC response buffer.
 jpttm.gesture_action.GetActionsResponse.actions max_count:8
 jpttm.gesture_action.ErrorResponse.message      max_size:64
+# Eight 24-char names plus framing stays inside a 256-byte response.
+jpttm.gesture_action.GetSlotNamesResponse.names max_count:8 max_size:24

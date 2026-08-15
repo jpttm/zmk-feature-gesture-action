@@ -56,3 +56,11 @@ int zmk_gesture_action_reset(uint8_t slot, bool persist);
 
 /** @brief How many slots this build has, i.e. CONFIG_ZMK_GESTURE_ACTION_COUNT. */
 uint8_t zmk_gesture_action_count(void);
+
+/**
+ * @brief The devicetree label for a slot, for UIs to show instead of a number.
+ *
+ * @retval NULL when the slot has no label, in which case a caller should fall
+ *         back to the slot number.
+ */
+const char *zmk_gesture_action_name(uint8_t slot);

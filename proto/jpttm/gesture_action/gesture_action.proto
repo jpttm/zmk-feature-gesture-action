@@ -44,11 +44,25 @@ message ResetActionResponse {
     bool success = 1;
 }
 
+// Human-readable label per slot, straight from the devicetree, so a UI can say
+// "Layer 7 up" instead of "slot 0". Paged like GetActions. Names never change
+// at runtime, so a client only needs to read them once per connection.
+message GetSlotNamesRequest {
+    uint32 start_slot = 1;
+}
+
+message GetSlotNamesResponse {
+    uint32 total_slots = 1;
+    uint32 start_slot = 2;
+    repeated string names = 3;
+}
+
 message Request {
     oneof request_type {
         GetActionsRequest get_actions = 1;
         SetActionRequest set_action = 2;
         ResetActionRequest reset_action = 3;
+        GetSlotNamesRequest get_slot_names = 4;
     }
 }
 
@@ -62,5 +76,6 @@ message Response {
         GetActionsResponse get_actions = 2;
         SetActionResponse set_action = 3;
         ResetActionResponse reset_action = 4;
+        GetSlotNamesResponse get_slot_names = 5;
     }
 }

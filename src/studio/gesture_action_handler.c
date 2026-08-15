@@ -63,6 +63,31 @@ static int handle_get_actions(const jpttm_gesture_action_GetActionsRequest *req,
     return 0;
 }
 
+static int handle_get_slot_names(const jpttm_gesture_action_GetSlotNamesRequest *req,
+                                 jpttm_gesture_action_Response *resp) {
+    jpttm_gesture_action_GetSlotNamesResponse result =
+        jpttm_gesture_action_GetSlotNamesResponse_init_zero;
+
+    const uint8_t total = zmk_gesture_action_count();
+    const size_t page = ARRAY_SIZE(result.names);
+
+    result.total_slots = total;
+    result.start_slot = req->start_slot;
+
+    for (uint32_t slot = req->start_slot; slot < total && result.names_count < page; slot++) {
+        const char *name = zmk_gesture_action_name((uint8_t)slot);
+        /* An unnamed slot still occupies a position, so the client can index
+         * the array by offset rather than having to match slots up. */
+        snprintf(result.names[result.names_count], sizeof(result.names[0]), "%s",
+                 name ? name : "");
+        result.names_count++;
+    }
+
+    resp->which_response_type = jpttm_gesture_action_Response_get_slot_names_tag;
+    resp->response_type.get_slot_names = result;
+    return 0;
+}
+
 static int handle_set_action(const jpttm_gesture_action_SetActionRequest *req,
                              jpttm_gesture_action_Response *resp) {
     if (!req->has_action) {
@@ -139,6 +164,9 @@ static bool gesture_action_rpc_handle_request(const zmk_custom_CallRequest *raw_
         break;
     case jpttm_gesture_action_Request_reset_action_tag:
         rc = handle_reset_action(&req.request_type.reset_action, resp);
+        break;
+    case jpttm_gesture_action_Request_get_slot_names_tag:
+        rc = handle_get_slot_names(&req.request_type.get_slot_names, resp);
         break;
     default:
         LOG_WRN("Unsupported gesture action request type: %d", req.which_request_type);
