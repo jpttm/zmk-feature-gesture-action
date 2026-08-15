@@ -201,17 +201,18 @@ static int on_gesture_action_released(struct zmk_behavior_binding *binding,
 
 #if IS_ENABLED(CONFIG_ZMK_BEHAVIOR_METADATA)
 
-static const struct behavior_parameter_value_metadata param_values[] = {
-    {
-        .display_name = "Action",
-        .type = BEHAVIOR_PARAMETER_VALUE_TYPE_RANGE,
-        .range =
-            {
-                .min = 0,
-                .max = SLOT_COUNT - 1,
-            },
+/* Enumerated rather than a range: a range renders as a slider, which is a poor
+ * way to pick one of a few dozen unrelated actions. Listing the values gets a
+ * pickable entry per slot instead. */
+#define GA_VALUE_ENTRY(i, _)                                                                       \
+    {                                                                                              \
+        .display_name = STRINGIFY(i),                                                              \
+        .value = i,                                                                                \
+        .type = BEHAVIOR_PARAMETER_VALUE_TYPE_VALUE,                                               \
     },
-};
+
+static const struct behavior_parameter_value_metadata param_values[] = {
+    LISTIFY(SLOT_COUNT, GA_VALUE_ENTRY, ())};
 
 static const struct behavior_parameter_metadata_set param_metadata_set[] = {{
     .param1_values = param_values,
