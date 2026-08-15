@@ -1,1 +1,1 @@
-{"root":["./src/app.tsx","./src/main.tsx","./vite.config.ts"],"version":"5.9.3"}
+{"root":["./src/app.tsx","./src/gestureactions.tsx","./src/gestureactioncodec.ts","./src/main.tsx","./src/usebehaviors.ts","./vite.config.ts"],"version":"5.9.3"}

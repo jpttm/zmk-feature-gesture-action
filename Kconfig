@@ -31,11 +31,16 @@ config ZMK_GESTURE_ACTION_STUDIO_RPC
 
 config ZMK_GESTURE_ACTION_COUNT
     int "Number of gesture action slots"
-    default 32
+    default 16
     range 1 64
     help
       How many independently assignable actions exist. Each slot costs a
       handful of bytes of RAM and one settings entry, so this can be generous
       compared to runtime macro slots.
+
+      Keep it modest anyway: the slot list is offered as one pickable entry per
+      slot, and a Studio UI has to fit them all on screen. DYA Studio's
+      key-assignment dialog stops short of about 28 entries with no way to
+      scroll to the rest, which strands the tail of a long list.
 
 endif

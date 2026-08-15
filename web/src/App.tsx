@@ -7,6 +7,8 @@ import {
   isUserCancelledError,
 } from "@cormoran/zmk-studio-react-hook";
 import { connect as connectGatt } from "@zmkfirmware/zmk-studio-ts-client/transport/gatt";
+import { ZMKAppContext } from "@cormoran/zmk-studio-react-hook";
+import { GestureActions } from "./GestureActions";
 
 /**
  * Step 1 of the gesture-action project: prove the browser can reach the
@@ -39,6 +41,7 @@ export function App() {
   const subsystems = customSubsystems?.subsystems ?? [];
 
   return (
+    <ZMKAppContext.Provider value={zmk}>
     <main>
       <h1>ZMK Gesture Action</h1>
       <p className="lede">
@@ -130,6 +133,8 @@ export function App() {
               </table>
             )}
           </section>
+
+          <GestureActions />
         </>
       )}
 
@@ -143,6 +148,7 @@ export function App() {
         </a>
       </footer>
     </main>
+    </ZMKAppContext.Provider>
   );
 }
 

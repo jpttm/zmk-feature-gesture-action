@@ -3,8 +3,8 @@
 Runtime-configurable gesture actions for ZMK, configured from the browser over
 USB or Bluetooth.
 
-> **Status: step 1 of 3.** Only the connection check exists so far. The
-> behaviour and its RPC are not written yet.
+> **Status: usable, rough.** All three pieces exist; the parameter editor still
+> takes raw ZMK values rather than named keycodes.
 
 ## Why
 
@@ -25,8 +25,10 @@ gestures and macros stop competing.
    Web Serial and Web Bluetooth and enumerate its custom RPC subsystems. *(done)*
 2. **`&gesture_action N` behaviour** — a behaviour whose binding is stored in
    settings and editable at runtime, seeded from devicetree defaults so a fresh
-   board works before it is ever configured.
+   board works before it is ever configured. *(done)*
 3. **Settings UI** — assign an action to each gesture from a web page.
+   *(first pass: read every slot, pick a behaviour from the device's own list,
+   enter its parameters, or reset a slot to its firmware default)*
 
 ## Web UI
 

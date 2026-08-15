@@ -175,3 +175,50 @@ footer {
 a {
   color: var(--accent);
 }
+
+button.ghost {
+  background: transparent;
+  color: var(--accent);
+}
+
+td.right {
+  text-align: right;
+  width: 6rem;
+}
+
+.editor {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.editor h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+select,
+input[type="number"] {
+  font: inherit;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.4rem 0.5rem;
+}
+
+.small {
+  font-size: 0.8rem;
+}
