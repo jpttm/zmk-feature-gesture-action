@@ -82,6 +82,25 @@ function Ja() {
         ジェスチャーが発動します。あとはこのページでお好みの動作に変更してお使いください。
       </p>
 
+      <h4>おすすめのキー設定</h4>
+      <p>
+        キーに余裕がない場合は<strong>レイヤータップ</strong>が便利です。DYA Studio で
+        <code>&amp;lt 7 A</code> のように設定すると、<strong>短押しで通常のキー入力、
+        長押しでジェスチャーのレイヤー</strong>になります。1つのキーを二役で使えるので、
+        既存の配列を崩さずに済みます。
+      </p>
+      <p className="muted small">
+        ひとつ注意点があります。レイヤータップは押してから約200ミリ秒経つまで
+        レイヤーが切り替わりません。<strong>押した直後にボールを回すと、最初の動きが
+        通常のカーソル移動として処理され、ジェスチャーを取りこぼします。</strong>
+        「押す → 一拍おく → 回す」と操作してください。
+      </p>
+      <p className="muted small">
+        空きキーがあるなら <code>&amp;mo 7</code>（押している間だけレイヤー7）のほうが
+        待ち時間がなく、素早く連続してジェスチャーを出せます。使用頻度が高いなら
+        こちらをおすすめします。
+      </p>
+
       <h3>このファームウェアの変更点</h3>
       <ul>
         <li>ジェスチャー機能の組み込み</li>
@@ -183,6 +202,25 @@ function En() {
       <p>
         That is all. Hold the layer key and roll the trackball up, down, left or right
         to fire a gesture. Then use this page to change what each one does.
+      </p>
+
+      <h4>Which key to use</h4>
+      <p>
+        If you have no spare keys, a <strong>layer tap</strong> works well. Setting{" "}
+        <code>&amp;lt 7 A</code> in DYA Studio gives you{" "}
+        <strong>the normal key on a short press and the gesture layer on a long
+        press</strong>, so an existing key does double duty and your layout stays
+        intact.
+      </p>
+      <p className="muted small">
+        One caveat: a layer tap does not switch layers until about 200&nbsp;ms after
+        the press. <strong>Rolling the ball immediately means the first part of the
+        motion is treated as ordinary cursor movement and the gesture is missed.</strong>{" "}
+        Press, pause for a beat, then roll.
+      </p>
+      <p className="muted small">
+        With a spare key, <code>&amp;mo 7</code> (layer 7 while held) has no such delay
+        and fires gestures back to back. Prefer it if you use gestures often.
       </p>
 
       <h3>What this firmware changes</h3>
