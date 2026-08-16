@@ -52,7 +52,7 @@ body {
 main {
   max-width: 78rem;
   margin: 0 auto;
-  padding: 2rem 1.25rem 4rem;
+  padding: 1.5rem 1.25rem 3rem;
 }
 
 /* Two columns once there is room: the connection and what the keyboard
@@ -151,7 +151,7 @@ h2 {
 }
 
 .credit {
-  margin: 0 0 1.5rem;
+  margin: 0;
 }
 
 /* Getting-started panel. Closed by default so returning users are not made to
@@ -427,7 +427,7 @@ details summary {
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1.25rem;
 }
 
 .pageHead .lede {
@@ -465,7 +465,7 @@ td.editorCell .editor {
 }
 
 .presets {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .presetRow {
@@ -510,7 +510,7 @@ button.ghost.on {
   flex-wrap: wrap;
   gap: 0.25rem;
   border-bottom: 1px solid var(--line);
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 button.tab {
@@ -532,8 +532,8 @@ button.tab.on {
 fieldset {
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 0.75rem 1rem;
-  margin: 0 0 1rem;
+  padding: 0.5rem 1rem 0.6rem;
+  margin: 0 0 0.5rem;
 }
 
 legend {
@@ -622,7 +622,7 @@ button.chip.on {
   color: var(--fg);
   text-transform: none;
   letter-spacing: 0;
-  margin: 1.5rem 0 0.75rem;
+  margin: 0 0 0.6rem;
 }
 
 .sectionHead {
@@ -677,4 +677,31 @@ input.grow {
   align-items: flex-end;
   gap: 0.4rem;
   flex-shrink: 0;
+}
+
+/* The heading and its one-line explanation share a row: the explanation is
+   short, and stacking it cost a full line above the controls. */
+.sectionHead + .presets {
+  margin-top: 0;
+}
+
+.hintRight {
+  margin: 0;
+  text-align: right;
+}
+
+/* Four slot rows at button height pushed the tabs off screen. The edit
+   control does not need to be as large as a primary action. */
+.slotCell button.ghost {
+  padding: 0.25rem 0.7rem;
+  font-size: 0.85rem;
+}
+
+.slotCell {
+  min-height: 1.9rem;
+}
+
+.work td,
+.work th {
+  padding: 0.3rem 0.5rem;
 }

@@ -230,8 +230,6 @@ export function GestureActions() {
 
   return (
     <section>
-      <h1 className="pageH1">{t("pageTitle")}</h1>
-
       {behaviorsLoading && <p className="muted">{t("loadingBehaviors")}</p>}
       {error && <p className="warn">{error}</p>}
       {namesError && (
@@ -240,7 +238,10 @@ export function GestureActions() {
         </p>
       )}
 
-      <h2 className="sectionH2">{t("presetsHeading")}</h2>
+      <div className="sectionHead">
+        <h2 className="sectionH2">{t("presetsHeading")}</h2>
+        <p className="muted small hintRight">{t("presetsHint")}</p>
+      </div>
 
       <Presets
         total={total}
@@ -466,7 +467,6 @@ function Presets({
           </button>
         ))}
       </div>
-      <p className="muted small">{t("presetsHint")}</p>
 
       {preview && (
         <div className="editor">
