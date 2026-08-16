@@ -9,8 +9,12 @@ import { useLang } from "./i18n";
  * readable as a whole is worth more here than sharing the markup.
  */
 
-const FW_R = import.meta.env.BASE_URL + "firmware/CLine46_R-gesture-20260816.uf2";
-const FW_L = import.meta.env.BASE_URL + "firmware/CLine46_L-20260816.uf2";
+/* One place to bump, so the two halves cannot drift apart in name or date. */
+const FW_VERSION = "20260816";
+const FW_R_NAME = `CLine46_R-${FW_VERSION}.uf2`;
+const FW_L_NAME = `CLine46_L-${FW_VERSION}.uf2`;
+const FW_R = import.meta.env.BASE_URL + "firmware/" + FW_R_NAME;
+const FW_L = import.meta.env.BASE_URL + "firmware/" + FW_L_NAME;
 
 const BEHAVIORS_DOC = "https://zmk.dev/docs/keymaps/behaviors";
 
@@ -35,12 +39,12 @@ function Downloads({ lang }: { lang: "ja" | "en" }) {
   return (
     <div className="downloads">
       <a className="dl primary" href={FW_R} download>
-        <strong>CLine46_R.uf2</strong>
-        <span>{lang === "ja" ? "右側" : "Right half"}</span>
+        <strong>{lang === "ja" ? "右側" : "Right half"}</strong>
+        <span>{FW_R_NAME}</span>
       </a>
       <a className="dl primary" href={FW_L} download>
-        <strong>CLine46_L.uf2</strong>
-        <span>{lang === "ja" ? "左側" : "Left half"}</span>
+        <strong>{lang === "ja" ? "左側" : "Left half"}</strong>
+        <span>{FW_L_NAME}</span>
       </a>
     </div>
   );
