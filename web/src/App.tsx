@@ -9,6 +9,7 @@ import {
 } from "@cormoran/zmk-studio-react-hook";
 import { connect as connectGatt } from "@zmkfirmware/zmk-studio-ts-client/transport/gatt";
 import { GestureActions } from "./GestureActions";
+import { GettingStarted } from "./GettingStarted";
 import { LangProvider, LangToggle, useT } from "./i18n";
 import { ThemeProvider, ThemeToggle } from "./theme";
 
@@ -52,13 +53,26 @@ function Page() {
         <header className="pageHead">
           <div>
             <h1>{t("title")}</h1>
-            <p className="lede">{t("lede")}</p>
+            <p className="subtitle">{t("subtitle")}</p>
+            <p className="credit muted small">
+              {t("unofficial")} ·{" "}
+              <a href="https://x.com/tu_no_tu" target="_blank" rel="noreferrer">
+                @tu_no_tu
+              </a>{" "}
+              ·{" "}
+              <a href="https://github.com/jpttm" target="_blank" rel="noreferrer">
+                GitHub jpttm
+              </a>{" "}
+              · ZMK
+            </p>
           </div>
           <div className="headToggles">
             <LangToggle />
             <ThemeToggle />
           </div>
         </header>
+
+        <GettingStarted />
 
         <section>
           <h2>{t("transportSupport")}</h2>

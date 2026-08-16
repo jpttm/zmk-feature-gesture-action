@@ -68,6 +68,88 @@ h2 {
   margin: 0 0 2rem;
 }
 
+.subtitle {
+  margin: 0 0 0.35rem;
+}
+
+.credit {
+  margin: 0 0 1.5rem;
+}
+
+/* Getting-started panel. Closed by default so returning users are not made to
+   scroll past it, but it sits above everything so a newcomer meets it first. */
+.guide {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.guide > summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.guideBody {
+  padding-top: 0.5rem;
+  max-width: 44rem;
+}
+
+.guideBody h3 {
+  font-size: 0.95rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.guideBody h4 {
+  font-size: 0.9rem;
+  margin: 1.25rem 0 0.35rem;
+}
+
+.guideBody p,
+.guideBody li {
+  line-height: 1.75;
+}
+
+.guideBody ol,
+.guideBody ul {
+  padding-left: 1.25rem;
+}
+
+.guideBody li {
+  margin-bottom: 0.35rem;
+}
+
+.downloads {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.dl {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--fg);
+}
+
+.dl:hover {
+  border-color: var(--accent);
+}
+
+.dl.primary {
+  border-color: var(--accent);
+}
+
+.dl span {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
 section {
   border-top: 1px solid var(--line);
   padding: 1.5rem 0;

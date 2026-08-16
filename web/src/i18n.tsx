@@ -13,11 +13,12 @@ export const DEFAULT_LANG: Lang = "ja";
 type Entry = { ja: string; en: string };
 
 export const STRINGS = {
-  title: { ja: "ZMK ジェスチャーアクション", en: "ZMK Gesture Action" },
-  lede: {
-    ja: "キーボードに接続して、ジェスチャーごとの動作を設定します。",
-    en: "Connect a keyboard and set what each gesture does.",
+  title: { ja: "ころころKit", en: "Korokoro Kit" },
+  subtitle: {
+    ja: "CLine46 トラックボールジェスチャー設定ツール",
+    en: "Trackball gesture setup for the CLine46",
   },
+  unofficial: { ja: "非公式ツール", en: "Unofficial tool" },
 
   transportSupport: { ja: "接続方式の対応状況", en: "Transport support" },
   webSerial: { ja: "USB（Web Serial）", en: "Web Serial (USB)" },
