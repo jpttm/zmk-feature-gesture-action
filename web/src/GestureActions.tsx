@@ -11,13 +11,15 @@ import {
   type Request,
   type Response,
 } from "./gestureActionCodec";
-import { useBehaviors, useLayerCount, type BehaviorInfo } from "./useBehaviors";
+import { useBehaviors, type BehaviorInfo } from "./useBehaviors";
 import { describeKeycode } from "./keycodes";
 import { useLang, useT } from "./i18n";
 import { PRESETS, type Preset } from "./presets";
 import { GroupTabs } from "./GroupTabs";
 import type { Group } from "./gestureActionCodec";
-import { ParamEditor, describeParam } from "./ParamEditor";
+import { describeParam } from "./ParamEditor";
+import { ActionChooser, describeAction } from "./ActionChooser";
+import type { Os } from "./actions";
 
 export function GestureActions() {
   const t = useT();
@@ -29,7 +31,9 @@ export function GestureActions() {
   const { behaviors, loading: behaviorsLoading } = useBehaviors(
     zmk?.state.connection ?? null,
   );
-  const layerCount = useLayerCount(zmk?.state.connection ?? null);
+  const { lang } = useLang();
+  const keyPressId =
+    behaviors.find((b) => isKeyPress(b.displayName))?.id ?? null;
 
   const [actions, setActions] = useState<Action[]>([]);
   const [names, setNames] = useState<string[]>([]);
@@ -41,6 +45,7 @@ export function GestureActions() {
   const [preview, setPreview] = useState<Preset | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
   const [defaults, setDefaults] = useState<Action[]>([]);
+  const [os, setOs] = useState<Os>("win");
 
   const refresh = useCallback(async () => {
     setBusy(true);
@@ -248,12 +253,20 @@ export function GestureActions() {
           const behavior = shown
             ? behaviors.find((b) => b.id === shown.behaviorId)
             : undefined;
+          const sendsKey = behavior?.param1.some((d) => d.hidUsage) ?? false;
 
           return (
             <div className="slotCell">
               <span>
                 {!shown || shown.behaviorId === UNSET ? (
                   <span className="muted">{t("nothing")}</span>
+                ) : sendsKey ? (
+                  <>
+                    {describeAction(shown.param1, lang)}{" "}
+                    <span className="muted small">
+                      {isDefault ? t("usingDefault") : t("changed")}
+                    </span>
+                  </>
                 ) : (
                   <>
                     <code>{summarise(behavior, shown)}</code>{" "}
@@ -271,15 +284,30 @@ export function GestureActions() {
                 {editing === slot ? t("cancel") : t("edit")}
               </button>
               {editing === slot && (
-                <Editor
-                  slot={slot}
-                  label={names[slot] || `${t("slot")} ${slot}`}
-                  current={isDefault ? shown : action}
-                  behaviors={behaviors}
-                  busy={busy}
-                  layerCount={layerCount}
-                  onApply={apply}
-                />
+                <div className="editor">
+                  {!sendsKey && shown && shown.behaviorId !== UNSET && (
+                    <p className="muted small">{t("notAKeyPress")}</p>
+                  )}
+                  <ActionChooser
+                    value={sendsKey && shown ? shown.param1 : 0}
+                    isDefault={isDefault}
+                    busy={busy}
+                    os={os}
+                    onOsChange={setOs}
+                    onPick={(keycode, persist) => {
+                      if (keyPressId === null) return;
+                      apply({
+                        kind: "setAction",
+                        action: { slot, behaviorId: keyPressId, param1: keycode, param2: 0 },
+                        persist,
+                      });
+                    }}
+                    onReset={() =>
+                      apply({ kind: "resetAction", slot, persist: true })
+                    }
+                    onCancel={() => setEditing(null)}
+                  />
+                </div>
               )}
             </div>
           );
@@ -450,118 +478,4 @@ function summarise(behavior: BehaviorInfo | undefined, action: Action): string {
   }
 
   return [behavior.displayName, ...parts].join(" ");
-}
-
-function Editor({
-  slot,
-  label,
-  current,
-  behaviors,
-  busy,
-  layerCount,
-  onApply,
-}: {
-  slot: number;
-  label: string;
-  current: Action | undefined;
-  behaviors: BehaviorInfo[];
-  busy: boolean;
-  layerCount: number;
-  onApply: (request: Request) => void;
-}) {
-  const t = useT();
-  const [behaviorId, setBehaviorId] = useState(current?.behaviorId ?? 0);
-  const [param1, setParam1] = useState(current?.param1 ?? 0);
-  const [param2, setParam2] = useState(current?.param2 ?? 0);
-
-  const action: Action = { slot, behaviorId, param1, param2 };
-  const selected = behaviors.find((b) => b.id === behaviorId);
-
-  return (
-    <div className="editor">
-      <h3>{label}</h3>
-
-      <label>
-        {t("behaviour")}
-        <select
-          value={behaviorId}
-          onChange={(e) => setBehaviorId(Number(e.target.value))}
-        >
-          <option value={0}>{t("useFirmwareDefault")}</option>
-          {behaviors.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.displayName}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      {selected && (
-        <>
-          <ParamEditor
-            label="param1"
-            descriptions={selected.param1}
-            value={param1}
-            layerCount={layerCount}
-            onChange={setParam1}
-          />
-          <ParamEditor
-            label="param2"
-            descriptions={selected.param2}
-            value={param2}
-            layerCount={layerCount}
-            onChange={setParam2}
-          />
-        </>
-      )}
-
-      <details>
-        <summary className="muted small">{t("advanced")}</summary>
-        <div className="row">
-          <label>
-            param1
-            <input
-              type="number"
-              min={0}
-              value={param1}
-              onChange={(e) => setParam1(Number(e.target.value))}
-            />
-          </label>
-          <label>
-            param2
-            <input
-              type="number"
-              min={0}
-              value={param2}
-              onChange={(e) => setParam2(Number(e.target.value))}
-            />
-          </label>
-        </div>
-      </details>
-
-      <div className="row">
-        <button
-          disabled={busy}
-          onClick={() => onApply({ kind: "setAction", action, persist: true })}
-        >
-          {t("save")}
-        </button>
-        <button
-          className="ghost"
-          disabled={busy}
-          onClick={() => onApply({ kind: "setAction", action, persist: false })}
-          title={t("tryTitle")}
-        >
-          {t("tryWithoutSaving")}
-        </button>
-        <button
-          className="ghost"
-          disabled={busy}
-          onClick={() => onApply({ kind: "resetAction", slot, persist: true })}
-        >
-          {t("resetToDefault")}
-        </button>
-      </div>
-    </div>
-  );
 }

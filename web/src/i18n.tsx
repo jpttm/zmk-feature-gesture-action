@@ -140,6 +140,20 @@ export const STRINGS = {
   changed: { ja: "変更済み", en: "changed" },
   nothing: { ja: "何も起きません", en: "does nothing" },
   advanced: { ja: "詳細（生のパラメータ）", en: "Advanced (raw parameters)" },
+  currentlySends: { ja: "現在の動作:", en: "Currently sends:" },
+  pickKeyDirectly: {
+    ja: "一覧にないキーを指定する",
+    en: "Pick a key not in the list",
+  },
+  notAKeyPress: {
+    ja: "このスロットはキー入力以外に設定されています。ここで選び直すとキー入力に置き換わります。",
+    en: "This slot is set to something other than a key press. Choosing here replaces it with one.",
+  },
+  catBrowser: { ja: "ブラウザ・タブ", en: "Browser and tabs" },
+  catWindow: { ja: "ウィンドウ・デスクトップ", en: "Windows and desktops" },
+  catEdit: { ja: "編集", en: "Editing" },
+  catMove: { ja: "移動", en: "Navigation" },
+  catMedia: { ja: "メディア", en: "Media" },
   source: { ja: "ソース", en: "Source" },
   builtOn: { ja: "使用ライブラリ:", en: "built on" },
 
