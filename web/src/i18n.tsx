@@ -182,6 +182,11 @@ export const STRINGS = {
   errBadParam: { ja: "引数を解釈できません", en: "Could not read an argument" },
   restoreToPreset: { ja: "初期設定に戻す", en: "Restore preset value" },
   restoreToDefault: { ja: "既定値に戻す", en: "Reset to default" },
+  diagnostics: { ja: "接続の詳細（開発者向け）", en: "Connection details (developer)" },
+  subsystemsHint: {
+    ja: "このキーボードのファームウェアに入っている設定機能の一覧です。通常は見る必要はありません。",
+    en: "Configurable features present in this keyboard's firmware. Not normally needed.",
+  },
   source: { ja: "ソース", en: "Source" },
   builtOn: { ja: "使用ライブラリ:", en: "built on" },
 

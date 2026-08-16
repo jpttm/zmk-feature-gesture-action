@@ -44,10 +44,8 @@ h1 {
 }
 
 h2 {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
+  font-size: 1rem;
+  color: var(--fg);
   margin: 0 0 0.75rem;
 }
 
@@ -475,4 +473,26 @@ label.check.taken {
 input.grow {
   flex: 1 1 14rem;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.otherKeys {
+  border-top: 1px solid var(--line);
+  padding-top: 0.9rem;
+}
+
+.otherKeys h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--fg);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.diagnostics {
+  border-top: 1px solid var(--line);
+  padding-top: 1.5rem;
+}
+
+.diagnostics summary {
+  cursor: pointer;
 }

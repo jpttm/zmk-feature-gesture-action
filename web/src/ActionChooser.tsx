@@ -76,7 +76,7 @@ export function ActionChooser({
         </div>
       ))}
 
-      <div className="catBlock">
+      <div className="catBlock otherKeys">
         <h4>{t("pickKeyOther")}</h4>
         <div className="row">
           <div className="mods">
@@ -114,20 +114,6 @@ export function ActionChooser({
         </div>
       </div>
 
-      <div className="row">
-        <button disabled={busy || draft === 0} onClick={() => onPick(draft)}>
-          {t("save")}
-        </button>
-        {canRestore && (
-          <button className="ghost" disabled={busy} onClick={onRestore}>
-            {restoreLabel}
-          </button>
-        )}
-        <button className="ghost" disabled={busy} onClick={onCancel}>
-          {t("cancel")}
-        </button>
-      </div>
-
       <details className="catBlock">
         <summary>{t("zmkNotation")}</summary>
         <p className="muted small">{t("zmkHint")}</p>
@@ -161,6 +147,21 @@ export function ActionChooser({
           </p>
         )}
       </details>
+
+      <div className="row">
+        <button disabled={busy || draft === 0} onClick={() => onPick(draft)}>
+          {t("save")}
+        </button>
+        {canRestore && (
+          <button className="ghost" disabled={busy} onClick={onRestore}>
+            {restoreLabel}
+          </button>
+        )}
+        <button className="ghost" disabled={busy} onClick={onCancel}>
+          {t("cancel")}
+        </button>
+      </div>
+
     </div>
   );
 }

@@ -109,7 +109,9 @@ function Page() {
               </dl>
             </section>
 
-            <section>
+            <details className="diagnostics">
+              <summary className="muted small">{t("diagnostics")}</summary>
+              <p className="muted small">{t("subsystemsHint")}</p>
               <h2>
                 {t("subsystems")} ({subsystems.length})
               </h2>
@@ -135,7 +137,7 @@ function Page() {
                   </tbody>
                 </table>
               )}
-            </section>
+            </details>
           </>
         )}
 
