@@ -136,6 +136,10 @@ export const STRINGS = {
     ja: "このファームウェアはレイヤー割り当ての変更に未対応です。",
     en: "This firmware does not support changing layer assignment.",
   },
+  usingDefault: { ja: "初期値のまま", en: "still the default" },
+  changed: { ja: "変更済み", en: "changed" },
+  nothing: { ja: "何も起きません", en: "does nothing" },
+  advanced: { ja: "詳細（生のパラメータ）", en: "Advanced (raw parameters)" },
   source: { ja: "ソース", en: "Source" },
   builtOn: { ja: "使用ライブラリ:", en: "built on" },
 

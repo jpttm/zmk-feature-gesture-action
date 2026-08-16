@@ -24,6 +24,19 @@ message GetActionsResponse {
     repeated Action actions = 3;
 }
 
+// The compile-time fallback for each slot. Static, so a client reads it once
+// and can then show what an unassigned slot will actually do instead of just
+// calling it "default".
+message GetDefaultsRequest {
+    uint32 start_slot = 1;
+}
+
+message GetDefaultsResponse {
+    uint32 total_slots = 1;
+    uint32 start_slot = 2;
+    repeated Action actions = 3;
+}
+
 message SetActionRequest {
     Action action = 1;
     // Leave false to try a binding out without spending a flash write.
@@ -90,6 +103,7 @@ message Request {
         GetSlotNamesRequest get_slot_names = 4;
         GetGroupsRequest get_groups = 5;
         SetGroupLayersRequest set_group_layers = 6;
+        GetDefaultsRequest get_defaults = 7;
     }
 }
 
@@ -106,5 +120,6 @@ message Response {
         GetSlotNamesResponse get_slot_names = 5;
         GetGroupsResponse get_groups = 6;
         SetGroupLayersResponse set_group_layers = 7;
+        GetDefaultsResponse get_defaults = 8;
     }
 }

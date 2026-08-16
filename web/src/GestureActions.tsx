@@ -11,18 +11,13 @@ import {
   type Request,
   type Response,
 } from "./gestureActionCodec";
-import { useBehaviors } from "./useBehaviors";
-import {
-  KEYCODE_GROUPS,
-  MODIFIERS,
-  describeKeycode,
-  packKeycode,
-  splitKeycode,
-} from "./keycodes";
+import { useBehaviors, useLayerCount, type BehaviorInfo } from "./useBehaviors";
+import { describeKeycode } from "./keycodes";
 import { useLang, useT } from "./i18n";
 import { PRESETS, type Preset } from "./presets";
 import { GroupTabs } from "./GroupTabs";
 import type { Group } from "./gestureActionCodec";
+import { ParamEditor, describeParam } from "./ParamEditor";
 
 export function GestureActions() {
   const t = useT();
@@ -34,6 +29,7 @@ export function GestureActions() {
   const { behaviors, loading: behaviorsLoading } = useBehaviors(
     zmk?.state.connection ?? null,
   );
+  const layerCount = useLayerCount(zmk?.state.connection ?? null);
 
   const [actions, setActions] = useState<Action[]>([]);
   const [names, setNames] = useState<string[]>([]);
@@ -44,6 +40,7 @@ export function GestureActions() {
   const [editing, setEditing] = useState<number | null>(null);
   const [preview, setPreview] = useState<Preset | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
+  const [defaults, setDefaults] = useState<Action[]>([]);
 
   const refresh = useCallback(async () => {
     setBusy(true);
@@ -104,6 +101,19 @@ export function GestureActions() {
       // it just cannot move a set between layers.
       const groupRes = await call({ kind: "getGroups" });
       setGroups(groupRes?.kind === "getGroups" ? groupRes.groups : []);
+
+      // Defaults are static; fetching them is what lets an untouched slot show
+      // the action it will actually perform instead of the word "default".
+      const collectedDefaults: Action[] = [];
+      startSlot = 0;
+      for (;;) {
+        const res = await call({ kind: "getDefaults", startSlot });
+        if (!res || res.kind !== "getDefaults") break;
+        collectedDefaults.push(...res.actions);
+        if (res.actions.length === 0 || collectedDefaults.length >= res.totalSlots) break;
+        startSlot = collectedDefaults.length;
+      }
+      setDefaults(collectedDefaults);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -195,8 +205,6 @@ export function GestureActions() {
     );
   }
 
-  const nameFor = (id: number) =>
-    behaviors.find((b) => b.id === id)?.displayName ?? `#${id}`;
 
   return (
     <section>
@@ -232,17 +240,27 @@ export function GestureActions() {
         renderSlot={(slot) => {
           const action = actions.find((x) => x.slot === slot);
           if (!action) return null;
+
+          // What the gesture actually does: the stored assignment if there is
+          // one, otherwise the firmware's own default for that slot.
+          const isDefault = action.behaviorId === UNSET;
+          const shown = isDefault ? defaults.find((d) => d.slot === slot) : action;
+          const behavior = shown
+            ? behaviors.find((b) => b.id === shown.behaviorId)
+            : undefined;
+
           return (
             <div className="slotCell">
               <span>
-                {action.behaviorId === UNSET ? (
-                  <span className="muted">{t("fromFirmware")}</span>
-                ) : isKeyPress(nameFor(action.behaviorId)) ? (
-                  <code>{describeKeycode(action.param1)}</code>
+                {!shown || shown.behaviorId === UNSET ? (
+                  <span className="muted">{t("nothing")}</span>
                 ) : (
-                  <code>
-                    {nameFor(action.behaviorId)} {action.param1} {action.param2}
-                  </code>
+                  <>
+                    <code>{summarise(behavior, shown)}</code>{" "}
+                    <span className="muted small">
+                      {isDefault ? t("usingDefault") : t("changed")}
+                    </span>
+                  </>
                 )}
               </span>
               <button
@@ -256,9 +274,10 @@ export function GestureActions() {
                 <Editor
                   slot={slot}
                   label={names[slot] || `${t("slot")} ${slot}`}
-                  current={action}
+                  current={isDefault ? shown : action}
                   behaviors={behaviors}
                   busy={busy}
+                  layerCount={layerCount}
                   onApply={apply}
                 />
               )}
@@ -409,9 +428,28 @@ function Presets({
   );
 }
 
-/** ZMK's key-press behaviour is the one worth giving a real picker. */
+/** Presets assign key presses, so they need that behaviour's id. */
 function isKeyPress(displayName: string): boolean {
   return displayName.toLowerCase().replace(/[\s_-]/g, "") === "keypress";
+}
+
+/** One-line summary of a binding, using the keyboard's own parameter metadata. */
+function summarise(behavior: BehaviorInfo | undefined, action: Action): string {
+  if (!behavior) {
+    return `#${action.behaviorId} ${action.param1} ${action.param2}`;
+  }
+
+  const parts = [
+    describeParam(behavior.param1, action.param1),
+    describeParam(behavior.param2, action.param2),
+  ].filter(Boolean);
+
+  // Key Press reads better as just "Ctrl+Tab" than "Key Press Ctrl+Tab".
+  if (parts.length === 1 && behavior.param1.some((d) => d.hidUsage)) {
+    return parts[0];
+  }
+
+  return [behavior.displayName, ...parts].join(" ");
 }
 
 function Editor({
@@ -420,13 +458,15 @@ function Editor({
   current,
   behaviors,
   busy,
+  layerCount,
   onApply,
 }: {
   slot: number;
   label: string;
   current: Action | undefined;
-  behaviors: { id: number; displayName: string }[];
+  behaviors: BehaviorInfo[];
   busy: boolean;
+  layerCount: number;
   onApply: (request: Request) => void;
 }) {
   const t = useT();
@@ -435,10 +475,7 @@ function Editor({
   const [param2, setParam2] = useState(current?.param2 ?? 0);
 
   const action: Action = { slot, behaviorId, param1, param2 };
-  const keyPress = isKeyPress(
-    behaviors.find((b) => b.id === behaviorId)?.displayName ?? "",
-  );
-  const { mods, base } = splitKeycode(param1);
+  const selected = behaviors.find((b) => b.id === behaviorId);
 
   return (
     <div className="editor">
@@ -459,55 +496,27 @@ function Editor({
         </select>
       </label>
 
-      {keyPress ? (
+      {selected && (
         <>
-          <div className="mods">
-            {MODIFIERS.map((m) => (
-              <label key={m.label} className="check">
-                <input
-                  type="checkbox"
-                  checked={(mods & m.bit) !== 0}
-                  onChange={(e) =>
-                    setParam1(
-                      packKeycode(
-                        e.target.checked ? mods | m.bit : mods & ~m.bit,
-                        base,
-                      ),
-                    )
-                  }
-                />
-                {m.label}
-              </label>
-            ))}
-          </div>
-
-          <label>
-            {t("keyLabel")}
-            <select
-              value={base}
-              onChange={(e) => setParam1(packKeycode(mods, Number(e.target.value)))}
-            >
-              <option value={0}>{t("pickKey")}</option>
-              {KEYCODE_GROUPS.map((group) => (
-                <optgroup key={group.labelKey} label={t(group.labelKey)}>
-                  {group.keys.map((k) => (
-                    <option key={k.value} value={k.value}>
-                      {k.name}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-          </label>
-
-          <p className="muted small">
-            {t("sends")} <code>{describeKeycode(param1)}</code> — {t("sendsHint")}
-          </p>
+          <ParamEditor
+            label="param1"
+            descriptions={selected.param1}
+            value={param1}
+            layerCount={layerCount}
+            onChange={setParam1}
+          />
+          <ParamEditor
+            label="param2"
+            descriptions={selected.param2}
+            value={param2}
+            layerCount={layerCount}
+            onChange={setParam2}
+          />
         </>
-      ) : null}
+      )}
 
       <details>
-        <summary className="muted small">{t("rawParameters")}</summary>
+        <summary className="muted small">{t("advanced")}</summary>
         <div className="row">
           <label>
             param1

@@ -67,6 +67,36 @@ static int handle_get_actions(const jpttm_gesture_action_GetActionsRequest *req,
     return 0;
 }
 
+static int handle_get_defaults(const jpttm_gesture_action_GetDefaultsRequest *req,
+                               jpttm_gesture_action_Response *resp) {
+    jpttm_gesture_action_GetDefaultsResponse result =
+        jpttm_gesture_action_GetDefaultsResponse_init_zero;
+
+    const uint8_t total = zmk_gesture_action_count();
+    const size_t page = ARRAY_SIZE(result.actions);
+
+    result.total_slots = total;
+    result.start_slot = req->start_slot;
+
+    for (uint32_t slot = req->start_slot; slot < total && result.actions_count < page; slot++) {
+        struct zmk_gesture_action_entry entry = {0};
+        /* A slot with no default reports behavior_id 0, same as an unassigned
+         * one - the client renders both as "nothing happens". */
+        zmk_gesture_action_default((uint8_t)slot, &entry);
+
+        result.actions[result.actions_count++] = (jpttm_gesture_action_Action){
+            .slot = slot,
+            .behavior_id = entry.behavior_local_id,
+            .param1 = entry.param1,
+            .param2 = entry.param2,
+        };
+    }
+
+    resp->which_response_type = jpttm_gesture_action_Response_get_defaults_tag;
+    resp->response_type.get_defaults = result;
+    return 0;
+}
+
 static int handle_get_slot_names(const jpttm_gesture_action_GetSlotNamesRequest *req,
                                  jpttm_gesture_action_Response *resp) {
     jpttm_gesture_action_GetSlotNamesResponse result =
@@ -215,6 +245,9 @@ static bool gesture_action_rpc_handle_request(const zmk_custom_CallRequest *raw_
         break;
     case jpttm_gesture_action_Request_reset_action_tag:
         rc = handle_reset_action(&req.request_type.reset_action, resp);
+        break;
+    case jpttm_gesture_action_Request_get_defaults_tag:
+        rc = handle_get_defaults(&req.request_type.get_defaults, resp);
         break;
     case jpttm_gesture_action_Request_get_slot_names_tag:
         rc = handle_get_slot_names(&req.request_type.get_slot_names, resp);

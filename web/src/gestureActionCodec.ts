@@ -33,6 +33,7 @@ export type Request =
   | { kind: "getActions"; startSlot: number }
   | { kind: "getSlotNames"; startSlot: number }
   | { kind: "getGroups" }
+  | { kind: "getDefaults"; startSlot: number }
   | { kind: "setGroupLayers"; index: number; activeLayers: number; persist: boolean }
   | { kind: "setAction"; action: Action; persist: boolean }
   | { kind: "resetAction"; slot: number; persist: boolean };
@@ -44,6 +45,7 @@ export type Response =
   | { kind: "resetAction"; success: boolean }
   | { kind: "getSlotNames"; totalSlots: number; startSlot: number; names: string[] }
   | { kind: "getGroups"; groups: Group[] }
+  | { kind: "getDefaults"; totalSlots: number; startSlot: number; actions: Action[] }
   | { kind: "setGroupLayers"; success: boolean }
   | { kind: "unknown" };
 
@@ -120,6 +122,12 @@ export function encodeRequest(request: Request): Uint8Array {
     }
     case "getGroups": {
       w.uint32(tag(5, WIRE_LEN)).bytes(new Uint8Array(0));
+      break;
+    }
+    case "getDefaults": {
+      const inner = Writer.create();
+      if (request.startSlot) inner.uint32(tag(1, WIRE_VARINT)).uint32(request.startSlot);
+      w.uint32(tag(7, WIRE_LEN)).bytes(inner.finish());
       break;
     }
     case "setGroupLayers": {
@@ -251,6 +259,31 @@ export function decodeResponse(payload: Uint8Array): Response {
           }
         }
         result = { kind: "getGroups", groups };
+        break;
+      }
+      case 8: {
+        let totalSlots = 0;
+        let startSlot = 0;
+        const actions: Action[] = [];
+        while (r.pos < innerEnd) {
+          const it = r.uint32();
+          switch (it >>> 3) {
+            case 1:
+              totalSlots = r.uint32();
+              break;
+            case 2:
+              startSlot = r.uint32();
+              break;
+            case 3: {
+              const actionEnd = r.uint32() + r.pos;
+              actions.push(readAction(r, actionEnd));
+              break;
+            }
+            default:
+              r.skipType(it & 7);
+          }
+        }
+        result = { kind: "getDefaults", totalSlots, startSlot, actions };
         break;
       }
       case 7: {

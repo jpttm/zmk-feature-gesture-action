@@ -381,3 +381,9 @@ legend {
 .slotCell .editor {
   flex-basis: 100%;
 }
+
+.paramBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}

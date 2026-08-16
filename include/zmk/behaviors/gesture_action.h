@@ -54,6 +54,17 @@ int zmk_gesture_action_set(uint8_t slot, const struct zmk_gesture_action_entry *
  */
 int zmk_gesture_action_reset(uint8_t slot, bool persist);
 
+/**
+ * @brief The devicetree fallback for a slot: what runs when nothing is stored.
+ *
+ * Lets a UI show the actual action rather than the word "default".
+ *
+ * @retval 0 on success.
+ * @retval -EINVAL if @p slot is out of range.
+ * @retval -ENOENT if the slot has no devicetree default.
+ */
+int zmk_gesture_action_default(uint8_t slot, struct zmk_gesture_action_entry *out);
+
 /** @brief How many slots this build has, i.e. CONFIG_ZMK_GESTURE_ACTION_COUNT. */
 uint8_t zmk_gesture_action_count(void);
 

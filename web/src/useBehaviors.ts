@@ -2,9 +2,22 @@ import { useCallback, useEffect, useState } from "react";
 import type { RpcConnection } from "@zmkfirmware/zmk-studio-ts-client";
 import { call_rpc } from "@zmkfirmware/zmk-studio-ts-client";
 
+/** One accepted value for a parameter, as the keyboard describes it. */
+export interface ParamDescription {
+  name: string;
+  nil?: unknown;
+  constant?: number;
+  range?: { min: number; max: number };
+  hidUsage?: unknown;
+  layerId?: unknown;
+}
+
 export interface BehaviorInfo {
   id: number;
   displayName: string;
+  /** First parameter set; behaviours here have at most one. */
+  param1: ParamDescription[];
+  param2: ParamDescription[];
 }
 
 /**
@@ -37,7 +50,13 @@ export function useBehaviors(connection: RpcConnection | null) {
         const d = details.behaviors?.getBehaviorDetails;
         if (!d) continue;
 
-        collected.push({ id: d.id, displayName: d.displayName || String(d.id) });
+        const set = d.metadata?.[0];
+        collected.push({
+          id: d.id,
+          displayName: d.displayName || String(d.id),
+          param1: (set?.param1 ?? []) as ParamDescription[],
+          param2: (set?.param2 ?? []) as ParamDescription[],
+        });
         setBehaviors([...collected].sort((a, b) => a.displayName.localeCompare(b.displayName)));
       }
     } catch (err) {
@@ -56,4 +75,34 @@ export function useBehaviors(connection: RpcConnection | null) {
   }, [connection, load]);
 
   return { behaviors, loading, error };
+}
+
+/**
+ * How many layers the keymap has, so a layer parameter offers the real ones
+ * rather than a guessed range.
+ */
+export function useLayerCount(connection: RpcConnection | null): number {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!connection) {
+      setCount(0);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await call_rpc(connection, { keymap: { getKeymap: true } });
+        const layers = res.keymap?.getKeymap?.layers?.length ?? 0;
+        if (!cancelled) setCount(layers);
+      } catch {
+        // Not fatal: the parameter editor falls back to a plain number field.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [connection]);
+
+  return count;
 }

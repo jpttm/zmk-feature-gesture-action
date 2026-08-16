@@ -110,6 +110,32 @@ const char *zmk_gesture_action_name(uint8_t slot) {
     return config->slot_names[slot];
 }
 
+int zmk_gesture_action_default(uint8_t slot, struct zmk_gesture_action_entry *out) {
+    if (slot >= SLOT_COUNT || out == NULL) {
+        return -EINVAL;
+    }
+
+    const struct device *dev = zmk_behavior_get_binding(GESTURE_ACTION_DEV_NAME);
+    if (!dev) {
+        return -ENODEV;
+    }
+
+    const struct behavior_gesture_action_config *config = dev->config;
+    if (slot >= config->defaults_len || config->defaults[slot].behavior_dev == NULL) {
+        return -ENOENT;
+    }
+
+    zmk_behavior_local_id_t id = zmk_behavior_get_local_id(config->defaults[slot].behavior_dev);
+    if (id == UINT16_MAX) {
+        return -ENOENT;
+    }
+
+    out->behavior_local_id = id;
+    out->param1 = config->defaults[slot].param1;
+    out->param2 = config->defaults[slot].param2;
+    return 0;
+}
+
 int zmk_gesture_action_get(uint8_t slot, struct zmk_gesture_action_entry *out) {
     if (slot >= SLOT_COUNT || out == NULL) {
         return -EINVAL;
