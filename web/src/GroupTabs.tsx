@@ -3,9 +3,19 @@ import type { Action, Group, Request } from "./gestureActionCodec";
 import { UNSET } from "./gestureActionCodec";
 import { useT } from "./i18n";
 
-/** Layers worth offering. 0-2 are the base and its immediate companions on
- *  most keyboards, and taking the pointer over on those is rarely wanted. */
-const SELECTABLE_LAYERS = [3, 4, 5, 6, 7, 8, 9, 10];
+/**
+ * Layers worth offering.
+ *
+ * 0-2 are the base and its immediate companions on most keyboards, and taking
+ * the pointer over on those is rarely wanted.
+ *
+ * 3 is left out because CLine46 attaches scrolling to it with an input-listener
+ * layer override. Overrides are evaluated before the base chain and stop there,
+ * so scrolling wins and a gesture group assigned to layer 3 would never fire -
+ * a checkbox that does nothing and says nothing. (Moving scrolling into the
+ * base chain, the way the gesture groups already are, would free layer 3 up.)
+ */
+const SELECTABLE_LAYERS = [4, 5, 6, 7, 8, 9, 10];
 
 const DIRECTIONS = ["colUp", "colDown", "colLeft", "colRight"] as const;
 
@@ -103,6 +113,7 @@ export function GroupTabs({
               <p className="muted small">{t("unassigned")}</p>
             )}
             <p className="muted small">{t("layerTakenHint")}</p>
+            <p className="muted small">{t("layerScrollNote")}</p>
           </fieldset>
         ) : (
           <p className="muted small">{t("groupsUnsupported")}</p>
