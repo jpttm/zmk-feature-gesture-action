@@ -15,7 +15,7 @@ import { useBehaviors, type BehaviorInfo } from "./useBehaviors";
 import { describeKeycode } from "./keycodes";
 import { useLang, useT } from "./i18n";
 import { PRESETS, type Preset } from "./presets";
-import { GroupTabs } from "./GroupTabs";
+import { GroupTabs, describeLayers } from "./GroupTabs";
 import type { Group } from "./gestureActionCodec";
 import { describeParam } from "./ParamEditor";
 import { ActionChooser, describeAction } from "./ActionChooser";
@@ -228,6 +228,7 @@ export function GestureActions() {
       <Presets
         total={total}
         names={names}
+        groups={groups}
         busy={busy}
         keyPressId={behaviors.find((b) => isKeyPress(b.displayName))?.id ?? null}
         preview={preview}
@@ -332,25 +333,39 @@ function groupSlots(count: number): number[][] {
   return rows;
 }
 
+const DIRECTION_KEYS = ["colUp", "colDown", "colLeft", "colRight"] as const;
+
 /**
- * Row heading. The firmware's slot names carry the layer ("L8 Up"), so the
- * shared prefix is the most meaningful label available; fall back to a group
- * number when a keyboard names its slots some other way.
+ * Column heading: the layers this group currently fires on, since that is what
+ * a reader wants to match against ("which column is layer 8?").
+ *
+ * The group-to-layer mapping is a runtime setting, so it is read from the
+ * device rather than assumed from the group number. Without that information -
+ * older firmware - fall back to the slot name's prefix, then to a group number.
  */
-function rowLabel(
+function columnLabel(
+  groups: Group[],
+  index: number,
   names: string[],
   firstSlot: number,
-  index: number,
-  groupWord: string,
+  t: (key: "layerWord" | "groupLabel" | "unassigned") => string,
 ): string {
-  const name = names[firstSlot];
-  const prefix = name?.trim().split(/\s+/)[0];
-  return prefix || `${groupWord} ${index + 1}`;
+  const layers = groups[index] ? describeLayers(groups[index].activeLayers) : [];
+  if (layers.length > 0) {
+    return `${t("layerWord")} ${layers.join(", ")}`;
+  }
+  if (groups[index]) {
+    return `${t("groupLabel")} ${index + 1}（${t("unassigned")}）`;
+  }
+
+  const prefix = names[firstSlot]?.trim().split(/\s+/)[0];
+  return prefix || `${t("groupLabel")} ${index + 1}`;
 }
 
 function Presets({
   total,
   names,
+  groups,
   busy,
   keyPressId,
   preview,
@@ -359,6 +374,7 @@ function Presets({
 }: {
   total: number;
   names: string[];
+  groups: Group[];
   busy: boolean;
   keyPressId: number | null;
   preview: Preset | null;
@@ -401,27 +417,27 @@ function Presets({
             <p className="warn small">{t("presetMismatch")}</p>
           )}
 
-          {/* One row per gesture layer, one column per direction: reading
-              "what does up do on layer 8" off a flat list of sixteen was
-              needlessly hard. */}
+          {/* Directions run down the rows and layers across the columns, the
+              same way round as the per-group editor. The two used to be
+              transposed relative to each other, which made comparing what a
+              preset would do against what is set an exercise in re-orienting. */}
           <table className="previewTable">
             <thead>
               <tr>
-                <th>{t("colLayer")}</th>
-                <th>{t("colUp")}</th>
-                <th>{t("colDown")}</th>
-                <th>{t("colLeft")}</th>
-                <th>{t("colRight")}</th>
+                <th />
+                {groupSlots(preview.actions.length).map((group, i) => (
+                  <th key={i}>{columnLabel(groups, i, names, group[0], t)}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {groupSlots(preview.actions.length).map((group, i) => (
-                <tr key={i}>
-                  <th scope="row">{rowLabel(names, group[0], i, t("groupLabel"))}</th>
-                  {group.map((slot) => {
-                    const item = preview.actions.find((x) => x.slot === slot);
+              {DIRECTION_KEYS.map((dirKey, dir) => (
+                <tr key={dirKey}>
+                  <th scope="row">{t(dirKey)}</th>
+                  {groupSlots(preview.actions.length).map((group, i) => {
+                    const item = preview.actions.find((x) => x.slot === group[dir]);
                     return (
-                      <td key={slot}>
+                      <td key={i}>
                         {item ? (
                           <>
                             <span className="cellLabel">{item.label[lang]}</span>
