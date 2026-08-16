@@ -304,16 +304,54 @@ static const struct behavior_driver_api behavior_gesture_action_driver_api = {
                 (LISTIFY(DT_INST_PROP_LEN(n, slot_names), GA_SLOT_NAME, (), DT_DRV_INST(n))),      \
                 (NULL,))
 
-/* Layer numbers -> bitmask at build time. The property is written as numbers
- * because that is what an overlay author is thinking in; the wire format is a
- * mask because that is what the UI compares against active-layers. */
+/* Which layers a configuration UI should not offer for gestures.
+ *
+ * Two different things end up in one mask:
+ *
+ *   Policy - layers the board wants kept for ordinary use, listed by hand in
+ *   reserved-layers. Nothing can derive these; they are a judgement call.
+ *
+ *   Fact - layers that cannot work, derived from the input listeners named in
+ *   input-listeners. An input-listener override is evaluated before the base
+ *   chain and returns there unless it sets process-next, so a gesture
+ *   processor sitting in the base chain never sees events on a layer some
+ *   override has claimed. A group assigned there would silently never fire.
+ *
+ * Deriving the second kind is what keeps this honest: move the scroll layer
+ * and the answer follows, instead of going quietly stale.
+ */
 #define GA_RESERVED_BIT(idx, node_id) | BIT(DT_PROP_BY_IDX(node_id, reserved_layers, idx))
 
-#define GA_RESERVED_MASK(n)                                                                            COND_CODE_1(DT_INST_NODE_HAS_PROP(n, reserved_layers),                                                         (0 LISTIFY(DT_INST_PROP_LEN(n, reserved_layers), GA_RESERVED_BIT, (),                                         DT_DRV_INST(n))),                                                                        (0))
+#define GA_MANUAL_BITS(n)                                                                          \
+    COND_CODE_1(DT_INST_NODE_HAS_PROP(n, reserved_layers),                                         \
+                (LISTIFY(DT_INST_PROP_LEN(n, reserved_layers), GA_RESERVED_BIT, (),                \
+                         DT_DRV_INST(n))),                                                          \
+                ())
+
+#define GA_OVERRIDE_LAYER_BIT(node_id, prop, idx) | BIT(DT_PROP_BY_IDX(node_id, prop, idx))
+
+/* An override that sets process-next falls through to the base chain, so it
+ * blocks nothing and its layers stay available. */
+#define GA_OVERRIDE_BITS_IF_BLOCKING(child)                                                        \
+    COND_CODE_1(DT_PROP_OR(child, process_next, 0), (),                                            \
+                (DT_FOREACH_PROP_ELEM(child, layers, GA_OVERRIDE_LAYER_BIT)))
+
+#define GA_OVERRIDE_BITS(child)                                                                    \
+    COND_CODE_1(DT_NODE_HAS_PROP(child, layers), (GA_OVERRIDE_BITS_IF_BLOCKING(child)), ())
+
+#define GA_LISTENER_BITS(node_id, prop, idx)                                                       \
+    DT_FOREACH_CHILD(DT_PHANDLE_BY_IDX(node_id, prop, idx), GA_OVERRIDE_BITS)
+
+#define GA_DERIVED_BITS(n)                                                                         \
+    COND_CODE_1(DT_INST_NODE_HAS_PROP(n, input_listeners),                                         \
+                (DT_INST_FOREACH_PROP_ELEM(n, input_listeners, GA_LISTENER_BITS)), ())
+
+#define GA_RESERVED_MASK(n) (0 GA_MANUAL_BITS(n) GA_DERIVED_BITS(n))
 
 /* Only one gesture_action node is meaningful, so instance 0 answers for the
  * board. DT_INST_FOREACH would just overwrite this with the same value. */
-#define GA_DEFINE_RESERVED(n)                                                                          static const uint32_t gesture_action_reserved_layers = GA_RESERVED_MASK(n);
+#define GA_DEFINE_RESERVED(n)                                                                      \
+    static const uint32_t gesture_action_reserved_layers = GA_RESERVED_MASK(n);
 
 DT_INST_FOREACH_STATUS_OKAY(GA_DEFINE_RESERVED)
 

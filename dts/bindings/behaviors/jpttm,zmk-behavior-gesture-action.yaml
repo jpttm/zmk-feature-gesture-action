@@ -37,18 +37,33 @@ properties:
   reserved-layers:
     type: array
     description: |
-      Layers this keyboard has already spoken for, which a configuration UI
-      should therefore not offer as a target for gestures. Give the layer
+      Layers this keyboard wants kept for ordinary use, which a configuration
+      UI should therefore not offer as a target for gestures. Give the layer
       numbers, not a bitmask.
 
       A layer with gestures on it loses ordinary cursor movement, so a board
-      whose base and pointing layers are fixed by design should list them here
-      rather than leave a user to discover it. Layers reached by an input
-      listener override are worth listing too: an override returns before the
-      base chain runs, so a gesture group placed there would silently never
-      fire.
+      whose base and pointing layers are fixed by design should say so here
+      rather than leave a user to find out.
 
-      Omit it and every layer is offered.
+      This is for policy only. Layers that *cannot* work are derived instead;
+      see input-listeners.
+
+      Omit it and no layer is reserved on policy grounds.
+
+  input-listeners:
+    type: phandles
+    description: |
+      The input listeners whose layer overrides should be treated as reserved.
+
+      An override is evaluated before the base chain and returns there unless
+      it sets process-next, so a gesture processor in the base chain never sees
+      events on a layer an override has claimed. A gesture group assigned to
+      such a layer would silently never fire, which is worth preventing rather
+      than documenting.
+
+      Naming the listeners here lets that be derived, so moving a scroll layer
+      does not leave a hand-written list quietly wrong. Overrides that set
+      process-next are ignored, since they do not block anything.
 
   display-name:
     type: string
