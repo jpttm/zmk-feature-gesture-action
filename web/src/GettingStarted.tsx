@@ -105,6 +105,17 @@ function Ja() {
         入れ直してください。多くの場合これで復帰します。
       </p>
 
+      <h4>DYA Studio で設定した内容は消えませんか</h4>
+      <p>
+        消えません。このツールが書き込むのはジェスチャー専用の保存領域で、
+        キーマップやマクロとは別に管理されています。おすすめ設定を書き込んでも、
+        DYA Studio で設定したキー配置・マクロ・トラックボールの設定はそのまま残ります。
+      </p>
+      <p className="muted small">
+        ただし <code>settings_reset.uf2</code> を書き込んだ場合は例外で、
+        こちらはキーボードの保存内容をすべて消去します。
+      </p>
+
       <h4>すべてのレイヤーでジェスチャーを使いたい</h4>
       <p>
         ジェスチャーを設定したレイヤーではマウスカーソルが動かなくなるため、
@@ -189,6 +200,17 @@ function En() {
         Only <strong>one</strong> of DYA Studio, ZMK Studio and this page can be
         connected at a time. Close all of them, then open just the one you want. If it
         still fails, power-cycle the keyboard. That clears it in most cases.
+      </p>
+
+      <h4>Will this overwrite what I set in DYA Studio?</h4>
+      <p>
+        No. Gesture assignments live in their own settings namespace, separate from
+        the keymap and macros. Writing a preset here leaves your key layout, macros
+        and trackball settings untouched.
+      </p>
+      <p className="muted small">
+        The one exception is <code>settings_reset.uf2</code>, which erases everything
+        stored on the keyboard.
       </p>
 
       <h4>Can I put gestures on every layer?</h4>
