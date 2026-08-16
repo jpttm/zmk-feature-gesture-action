@@ -1,12 +1,12 @@
 :root {
   --bg: #ffffff;
-  --fg: #1a1a1a;
-  --muted: #6b7280;
-  --line: #e5e7eb;
-  --accent: #2563eb;
-  --surface: #f8fafc;
-  --ok: #15803d;
-  --no: #b91c1c;
+  --fg: #14181d;
+  --muted: #5f6a75;
+  --line: #dfe3e8;
+  --accent: #0f7a63;
+  --surface: #f5f7f7;
+  --ok: #0f7a63;
+  --no: #b3261e;
   color-scheme: light dark;
 }
 
@@ -16,26 +16,26 @@
    explicit Light choice win on a machine set to dark. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #16181d;
-    --fg: #e8e8e8;
-    --muted: #9aa1ac;
-    --line: #2c313a;
-    --accent: #60a5fa;
-    --surface: #1c1f26;
-    --ok: #4ade80;
-    --no: #f87171;
+    --bg: #14171c;
+    --fg: #e7eaec;
+    --muted: #98a1ab;
+    --line: #2a2f36;
+    --accent: #4cbfa1;
+    --surface: #1a1e24;
+    --ok: #4cbfa1;
+    --no: #f2857c;
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #16181d;
-  --fg: #e8e8e8;
-  --muted: #9aa1ac;
-  --line: #2c313a;
-  --accent: #60a5fa;
-  --surface: #1c1f26;
-  --ok: #4ade80;
-  --no: #f87171;
+  --bg: #14171c;
+  --fg: #e7eaec;
+  --muted: #98a1ab;
+  --line: #2a2f36;
+  --accent: #4cbfa1;
+  --surface: #1a1e24;
+  --ok: #4cbfa1;
+  --no: #f2857c;
 }
 
 * {
@@ -46,7 +46,10 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--fg);
-  font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+  font: 15.5px/1.65 system-ui, -apple-system, "Segoe UI", "Hiragino Kaku Gothic ProN",
+    "Yu Gothic UI", "Noto Sans JP", sans-serif;
+  font-feature-settings: "palt";
+  -webkit-font-smoothing: antialiased;
 }
 
 main {
@@ -106,15 +109,18 @@ main {
 }
 
 h1 {
-  font-size: 1.8rem;
-  letter-spacing: 0.01em;
-  margin: 0 0 0.25rem;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.3rem;
 }
 
 h2 {
-  font-size: 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   color: var(--fg);
-  margin: 0 0 0.75rem;
+  margin: 0 0 0.6rem;
 }
 
 .lede {
@@ -241,12 +247,14 @@ section {
 
 button {
   font: inherit;
-  padding: 0.55rem 1.1rem;
+  font-weight: 600;
+  padding: 0.5rem 1.05rem;
   border: 1px solid var(--accent);
-  border-radius: 6px;
+  border-radius: 7px;
   background: var(--accent);
-  color: #fff;
+  color: var(--bg);
   cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
 }
 
 button:disabled {
@@ -265,23 +273,18 @@ ul.support {
 
 .badge {
   display: inline-block;
-  min-width: 2.4rem;
-  text-align: center;
-  font-size: 0.75rem;
+  min-width: 2.6rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  padding: 0.1rem 0.4rem;
-  border-radius: 4px;
   margin-right: 0.5rem;
 }
 
 .badge.ok {
   color: var(--ok);
-  border: 1px solid var(--ok);
 }
 
 .badge.no {
   color: var(--no);
-  border: 1px solid var(--no);
 }
 
 .warn {
@@ -321,9 +324,8 @@ td {
 }
 
 th {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 0.8rem;
+  font-weight: 600;
   color: var(--muted);
 }
 
@@ -360,7 +362,17 @@ a {
 
 button.ghost {
   background: transparent;
-  color: var(--accent);
+  color: var(--fg);
+  border-color: var(--line);
+  font-weight: 500;
+}
+
+button.ghost:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+button.ghost.on {
+  border-color: var(--accent);
 }
 
 td.right {
@@ -618,10 +630,11 @@ button.chip.on {
 }
 
 .sectionH2 {
-  font-size: 1rem;
+  font-size: 1.15rem;
+  font-weight: 700;
   color: var(--fg);
   text-transform: none;
-  letter-spacing: 0;
+  letter-spacing: -0.015em;
   margin: 0 0 0.6rem;
 }
 
@@ -704,4 +717,21 @@ input.grow {
 .work td,
 .work th {
   padding: 0.3rem 0.5rem;
+}
+
+/* Presets are a choice you make once, so the row reads better as a centred
+   set of options than as a left-aligned toolbar. */
+.presetRow {
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.presetRow button {
+  padding: 0.35rem 0.95rem;
+}
+
+/* Generous space between the two halves of this column, tight space inside
+   each - the gap is what says they are separate things. */
+.presets {
+  margin-bottom: 2.25rem;
 }
