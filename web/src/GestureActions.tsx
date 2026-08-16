@@ -15,7 +15,7 @@ import { useBehaviors, type BehaviorInfo } from "./useBehaviors";
 import { describeKeycode } from "./keycodes";
 import { useLang, useT } from "./i18n";
 import { PRESETS, type Preset } from "./presets";
-import { GroupTabs, describeLayers } from "./GroupTabs";
+import { GroupTabs, describeLayers, selectableLayers } from "./GroupTabs";
 import type { Group } from "./gestureActionCodec";
 import { describeParam } from "./ParamEditor";
 import { ActionChooser, describeAction } from "./ActionChooser";
@@ -45,6 +45,11 @@ export function GestureActions() {
   const [editing, setEditing] = useState<number | null>(null);
   const [preview, setPreview] = useState<Preset | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
+  // The board tells us its own layer range; see selectableLayers.
+  const [layerInfo, setLayerInfo] = useState<{
+    layerCount?: number;
+    reservedLayers?: number;
+  }>({});
   const [defaults, setDefaults] = useState<Action[]>([]);
   const [os, setOs] = useState<Os>(
     () => (localStorage.getItem("zmk-gesture-action.os") as Os) || "win",
@@ -112,6 +117,11 @@ export function GestureActions() {
       // it just cannot move a set between layers.
       const groupRes = await call({ kind: "getGroups" });
       setGroups(groupRes?.kind === "getGroups" ? groupRes.groups : []);
+      setLayerInfo(
+        groupRes?.kind === "getGroups"
+          ? { layerCount: groupRes.layerCount, reservedLayers: groupRes.reservedLayers }
+          : {},
+      );
 
       // Defaults are static; fetching them is what lets an untouched slot show
       // the action it will actually perform instead of the word "default".
@@ -280,6 +290,7 @@ export function GestureActions() {
 
       <GroupTabs
         groups={groups}
+        layers={selectableLayers(layerInfo.layerCount, layerInfo.reservedLayers)}
         totalSlots={total}
         actions={actions}
         busy={busy}

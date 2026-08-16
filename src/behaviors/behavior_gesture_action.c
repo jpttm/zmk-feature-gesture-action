@@ -304,6 +304,23 @@ static const struct behavior_driver_api behavior_gesture_action_driver_api = {
                 (LISTIFY(DT_INST_PROP_LEN(n, slot_names), GA_SLOT_NAME, (), DT_DRV_INST(n))),      \
                 (NULL,))
 
+/* Layer numbers -> bitmask at build time. The property is written as numbers
+ * because that is what an overlay author is thinking in; the wire format is a
+ * mask because that is what the UI compares against active-layers. */
+#define GA_RESERVED_BIT(idx, node_id) | BIT(DT_PROP_BY_IDX(node_id, reserved_layers, idx))
+
+#define GA_RESERVED_MASK(n)                                                                            COND_CODE_1(DT_INST_NODE_HAS_PROP(n, reserved_layers),                                                         (0 LISTIFY(DT_INST_PROP_LEN(n, reserved_layers), GA_RESERVED_BIT, (),                                         DT_DRV_INST(n))),                                                                        (0))
+
+/* Only one gesture_action node is meaningful, so instance 0 answers for the
+ * board. DT_INST_FOREACH would just overwrite this with the same value. */
+#define GA_DEFINE_RESERVED(n)                                                                          static const uint32_t gesture_action_reserved_layers = GA_RESERVED_MASK(n);
+
+DT_INST_FOREACH_STATUS_OKAY(GA_DEFINE_RESERVED)
+
+uint32_t zmk_gesture_action_reserved_layers(void) {
+    return gesture_action_reserved_layers;
+}
+
 #define GESTURE_ACTION_INST(n)                                                                     \
     static const struct default_binding gesture_action_defaults_##n[] = {GA_DEFAULTS(n)};          \
     static const char *const gesture_action_slot_names_##n[] = {GA_SLOT_NAMES(n)};                 \

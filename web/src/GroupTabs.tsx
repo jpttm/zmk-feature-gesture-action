@@ -4,18 +4,35 @@ import { UNSET } from "./gestureActionCodec";
 import { useT } from "./i18n";
 
 /**
- * Layers worth offering.
+ * Which layers to offer, worked out from what the board reports.
  *
- * 0-2 are the base and its immediate companions on most keyboards, and taking
- * the pointer over on those is rarely wanted.
+ * A keyboard knows things this page cannot: how many layers it was built with,
+ * and which of them are already spoken for. CLine46 reserves 0-3 - the base and
+ * its companions, plus the scroll layer, which is attached by an input-listener
+ * override and would swallow a gesture group placed there without a word. Those
+ * come over the wire from the reserved-layers devicetree property.
  *
- * 3 is left out because CLine46 attaches scrolling to it with an input-listener
- * layer override. Overrides are evaluated before the base chain and stop there,
- * so scrolling wins and a gesture group assigned to layer 3 would never fire -
- * a checkbox that does nothing and says nothing. (Moving scrolling into the
- * base chain, the way the gesture groups already are, would free layer 3 up.)
+ * Firmware built before the board reported any of this falls back to CLine46's
+ * numbers, since that is the only keyboard shipping this today.
  */
-const SELECTABLE_LAYERS = [4, 5, 6, 7, 8, 9, 10];
+const FALLBACK_LAYERS = [4, 5, 6, 7, 8, 9, 10];
+
+export function selectableLayers(
+  layerCount: number | undefined,
+  reservedLayers: number | undefined,
+): number[] {
+  if (!layerCount) {
+    return FALLBACK_LAYERS;
+  }
+  const reserved = reservedLayers ?? 0;
+  const layers: number[] = [];
+  for (let layer = 0; layer < layerCount; layer++) {
+    if ((reserved & (1 << layer)) === 0) {
+      layers.push(layer);
+    }
+  }
+  return layers;
+}
 
 const DIRECTIONS = ["colUp", "colDown", "colLeft", "colRight"] as const;
 
@@ -24,6 +41,7 @@ export function GroupTabs({
   totalSlots,
   actions,
   busy,
+  layers: offeredLayers,
   renderSlot,
   onSetLayers,
 }: {
@@ -31,6 +49,7 @@ export function GroupTabs({
   totalSlots: number;
   actions: Action[];
   busy: boolean;
+  layers: number[];
   renderSlot: (slot: number) => React.ReactNode;
   onSetLayers: (index: number, mask: number) => void;
 }) {
@@ -84,7 +103,7 @@ export function GroupTabs({
               <span className="footMark">*</span>
             </legend>
             <div className="mods">
-              {SELECTABLE_LAYERS.map((layer) => {
+              {offeredLayers.map((layer) => {
                 const mine = (group.activeLayers & (1 << layer)) !== 0;
                 // One layer, one group: two groups on the same layer would
                 // both fire, and which action wins is not something a user
@@ -149,7 +168,7 @@ export function GroupTabs({
 /** Layer numbers a mask covers, ignoring the "unassigned" parking bit. */
 export function describeLayers(mask: number): number[] {
   const layers: number[] = [];
-  for (const layer of SELECTABLE_LAYERS) {
+  for (let layer = 0; layer < 31; layer++) {
     if (mask & (1 << layer)) {
       layers.push(layer);
     }

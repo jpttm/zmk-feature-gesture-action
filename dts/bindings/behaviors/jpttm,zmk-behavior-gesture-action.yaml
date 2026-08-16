@@ -34,5 +34,21 @@ properties:
       cap. May be shorter than the slot count; unnamed slots fall back to their
       number.
 
+  reserved-layers:
+    type: array
+    description: |
+      Layers this keyboard has already spoken for, which a configuration UI
+      should therefore not offer as a target for gestures. Give the layer
+      numbers, not a bitmask.
+
+      A layer with gestures on it loses ordinary cursor movement, so a board
+      whose base and pointing layers are fixed by design should list them here
+      rather than leave a user to discover it. Layers reached by an input
+      listener override are worth listing too: an override returns before the
+      base chain runs, so a gesture group placed there would silently never
+      fire.
+
+      Omit it and every layer is offered.
+
   display-name:
     type: string

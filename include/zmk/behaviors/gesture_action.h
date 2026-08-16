@@ -20,6 +20,15 @@ struct zmk_gesture_action_entry {
 };
 
 /**
+ * @brief Layers the board has reserved, as a bitmask.
+ *
+ * Set from the reserved-layers devicetree property. A configuration UI should
+ * leave these out of the layers it offers for gestures. Zero means the board
+ * has reserved nothing.
+ */
+uint32_t zmk_gesture_action_reserved_layers(void);
+
+/**
  * @brief Read the action currently assigned to a slot.
  *
  * Reports the stored assignment only. A slot with nothing stored reads back as
