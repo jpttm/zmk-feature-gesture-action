@@ -98,7 +98,9 @@ function Page() {
         <section>
           <h2>{t("connection")}</h2>
           {zmk.isConnected ? (
-            <button onClick={zmk.disconnect}>{t("disconnect")}</button>
+            <button className="ghost" onClick={zmk.disconnect}>
+              {t("disconnect")}
+            </button>
           ) : (
             <div className="row">
               <button

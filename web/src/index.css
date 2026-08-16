@@ -735,3 +735,22 @@ input.grow {
 .presets {
   margin-bottom: 2.25rem;
 }
+
+/* Native checkboxes were still drawing in the browser's own blue, which was
+   the one bit of the old palette left on screen. */
+input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+/* While a row is being edited its cell grows to hold the editor, and a
+   middle-aligned row header drifted away from the line it labels. */
+.work tbody th,
+.work tbody td {
+  vertical-align: top;
+}
+
+.work tbody th.slotCol {
+  padding-top: 0.55rem;
+}
