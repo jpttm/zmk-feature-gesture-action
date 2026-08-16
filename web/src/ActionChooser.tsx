@@ -116,7 +116,16 @@ export function ActionChooser({
 
       <details className="catBlock">
         <summary>{t("zmkNotation")}</summary>
-        <p className="muted small">{t("zmkHint")}</p>
+        <p className="muted small">
+          {t("zmkHint")}{" "}
+          <a
+            href="https://zmk.dev/docs/keymaps/behaviors"
+            target="_blank"
+            rel="noreferrer"
+          >
+            {t("zmkDocs")}
+          </a>
+        </p>
         <div className="row">
           <input
             type="text"

@@ -10,11 +10,14 @@ import {
 import { connect as connectGatt } from "@zmkfirmware/zmk-studio-ts-client/transport/gatt";
 import { GestureActions } from "./GestureActions";
 import { LangProvider, LangToggle, useT } from "./i18n";
+import { ThemeProvider, ThemeToggle } from "./theme";
 
 export function App() {
   return (
     <LangProvider>
-      <Page />
+      <ThemeProvider>
+        <Page />
+      </ThemeProvider>
     </LangProvider>
   );
 }
@@ -51,7 +54,10 @@ function Page() {
             <h1>{t("title")}</h1>
             <p className="lede">{t("lede")}</p>
           </div>
-          <LangToggle />
+          <div className="headToggles">
+            <LangToggle />
+            <ThemeToggle />
+          </div>
         </header>
 
         <section>

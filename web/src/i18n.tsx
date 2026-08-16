@@ -187,6 +187,11 @@ export const STRINGS = {
     ja: "このキーボードのファームウェアに入っている設定機能の一覧です。通常は見る必要はありません。",
     en: "Configurable features present in this keyboard's firmware. Not normally needed.",
   },
+  theme: { ja: "配色", en: "Theme" },
+  themeAuto: { ja: "自動", en: "Auto" },
+  themeLight: { ja: "ライト", en: "Light" },
+  themeDark: { ja: "ダーク", en: "Dark" },
+  zmkDocs: { ja: "ZMK のビヘイビア一覧", en: "ZMK behaviour reference" },
   source: { ja: "ソース", en: "Source" },
   builtOn: { ja: "使用ライブラリ:", en: "built on" },
 

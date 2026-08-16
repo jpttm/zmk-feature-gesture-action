@@ -442,7 +442,6 @@ function Presets({
   return (
     <div className="presets">
       <div className="row presetRow">
-        <span className="muted small">{t("presets")}:</span>
         {PRESETS.map((preset) => (
           <button
             key={preset.id}
