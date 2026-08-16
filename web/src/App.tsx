@@ -10,6 +10,7 @@ import {
 import { connect as connectGatt } from "@zmkfirmware/zmk-studio-ts-client/transport/gatt";
 import { GestureActions } from "./GestureActions";
 import { GettingStarted } from "./GettingStarted";
+import { Credits } from "./Credits";
 import { LangProvider, LangToggle, useT } from "./i18n";
 import { ThemeProvider, ThemeToggle } from "./theme";
 
@@ -178,13 +179,14 @@ function Page() {
         </div>
 
         <footer>
-          <a href="https://github.com/jpttm/zmk-feature-gesture-action">
-            {t("source")}
-          </a>{" "}
-          · MIT · {t("builtOn")}{" "}
-          <a href="https://github.com/cormoran/react-zmk-studio">
-            @cormoran/zmk-studio-react-hook
-          </a>
+          <Credits />
+          <p className="footLine">
+            ころころKit ·{" "}
+            <a href="https://github.com/jpttm/zmk-feature-gesture-action">
+              {t("source")}
+            </a>{" "}
+            · MIT
+          </p>
         </footer>
       </main>
     </ZMKAppContext.Provider>
