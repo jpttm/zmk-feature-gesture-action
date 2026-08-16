@@ -77,26 +77,42 @@ export function useBehaviors(connection: RpcConnection | null) {
   return { behaviors, loading, error };
 }
 
+/** A layer as the keymap orders it. */
+export interface LayerInfo {
+  /** Position in the keymap, which is what a layer bitmask indexes. */
+  index: number;
+  /** The keymap's own name for it, empty if unnamed. */
+  name: string;
+}
+
 /**
- * How many layers the keymap has, so a layer parameter offers the real ones
- * rather than a guessed range.
+ * The keymap's layers, in order.
+ *
+ * This is the keyboard's own answer, so it stays right when layers are added
+ * or removed at runtime - which a compile-time layer count would not.
+ *
+ * Deliberately keyed on array position rather than Layer.id: ids survive
+ * reordering, but the bitmasks this feeds index layers by position, and mixing
+ * the two would point a mask at the wrong layer.
  */
-export function useLayerCount(connection: RpcConnection | null): number {
-  const [count, setCount] = useState(0);
+export function useLayers(connection: RpcConnection | null): LayerInfo[] {
+  const [layers, setLayers] = useState<LayerInfo[]>([]);
 
   useEffect(() => {
     if (!connection) {
-      setCount(0);
+      setLayers([]);
       return;
     }
     let cancelled = false;
     void (async () => {
       try {
         const res = await call_rpc(connection, { keymap: { getKeymap: true } });
-        const layers = res.keymap?.getKeymap?.layers?.length ?? 0;
-        if (!cancelled) setCount(layers);
+        const got = res.keymap?.getKeymap?.layers ?? [];
+        if (!cancelled) {
+          setLayers(got.map((l, index) => ({ index, name: l.name ?? "" })));
+        }
       } catch {
-        // Not fatal: the parameter editor falls back to a plain number field.
+        // Not fatal: callers fall back to plain numbers.
       }
     })();
     return () => {
@@ -104,5 +120,5 @@ export function useLayerCount(connection: RpcConnection | null): number {
     };
   }, [connection]);
 
-  return count;
+  return layers;
 }

@@ -10,7 +10,6 @@
 #include <jpttm/gesture_action/gesture_action.pb.h>
 #include <zmk/behaviors/gesture_action.h>
 #include <zmk/studio/custom.h>
-#include <zmk/keymap.h>
 
 #if IS_ENABLED(CONFIG_ZMK_GESTURE_ACTION_LAYER_GROUPS)
 #include <zmk/mouse_gesture.h>
@@ -145,9 +144,9 @@ static int handle_get_groups(jpttm_gesture_action_Response *resp) {
         LOG_WRN("Reporting %d of %d gesture groups", (int)max, total);
     }
 
-    /* What the UI needs to build the layer picker for *this* board rather than
-     * carrying one keyboard's layer numbers in its source. */
-    result.layer_count = ZMK_KEYMAP_LAYERS_LEN;
+    /* The one thing the UI cannot work out for itself: how many layers exist
+     * is in the keymap it already reads, but which of them are spoken for is a
+     * decision only this board can state. */
     result.reserved_layers = zmk_gesture_action_reserved_layers();
 
     resp->which_response_type = jpttm_gesture_action_Response_get_groups_tag;

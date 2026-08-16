@@ -791,3 +791,10 @@ input[type="checkbox"] {
 .footLine {
   margin: 0;
 }
+
+/* The keymap's own name for a layer, so "7" is not the only thing telling you
+   which one you are about to claim. */
+.layerName {
+  color: var(--muted);
+  font-size: 0.85em;
+}

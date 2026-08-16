@@ -11,7 +11,7 @@ import {
   type Request,
   type Response,
 } from "./gestureActionCodec";
-import { useBehaviors, type BehaviorInfo } from "./useBehaviors";
+import { useBehaviors, useLayers, type BehaviorInfo } from "./useBehaviors";
 import { describeKeycode } from "./keycodes";
 import { useLang, useT } from "./i18n";
 import { PRESETS, type Preset } from "./presets";
@@ -32,6 +32,7 @@ export function GestureActions() {
   const { behaviors, loading: behaviorsLoading } = useBehaviors(
     zmk?.state.connection ?? null,
   );
+  const layers = useLayers(zmk?.state.connection ?? null);
   const { lang } = useLang();
   const keyPressId =
     behaviors.find((b) => isKeyPress(b.displayName))?.id ?? null;
@@ -45,11 +46,8 @@ export function GestureActions() {
   const [editing, setEditing] = useState<number | null>(null);
   const [preview, setPreview] = useState<Preset | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
-  // The board tells us its own layer range; see selectableLayers.
-  const [layerInfo, setLayerInfo] = useState<{
-    layerCount?: number;
-    reservedLayers?: number;
-  }>({});
+  // Which layers this board keeps for itself; see selectableLayers.
+  const [reservedLayers, setReservedLayers] = useState<number | undefined>();
   const [defaults, setDefaults] = useState<Action[]>([]);
   const [os, setOs] = useState<Os>(
     () => (localStorage.getItem("zmk-gesture-action.os") as Os) || "win",
@@ -117,10 +115,8 @@ export function GestureActions() {
       // it just cannot move a set between layers.
       const groupRes = await call({ kind: "getGroups" });
       setGroups(groupRes?.kind === "getGroups" ? groupRes.groups : []);
-      setLayerInfo(
-        groupRes?.kind === "getGroups"
-          ? { layerCount: groupRes.layerCount, reservedLayers: groupRes.reservedLayers }
-          : {},
+      setReservedLayers(
+        groupRes?.kind === "getGroups" ? groupRes.reservedLayers : undefined,
       );
 
       // Defaults are static; fetching them is what lets an untouched slot show
@@ -290,7 +286,7 @@ export function GestureActions() {
 
       <GroupTabs
         groups={groups}
-        layers={selectableLayers(layerInfo.layerCount, layerInfo.reservedLayers)}
+        layers={selectableLayers(layers, reservedLayers)}
         totalSlots={total}
         actions={actions}
         busy={busy}

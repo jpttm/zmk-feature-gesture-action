@@ -83,11 +83,10 @@ message GetGroupsRequest {}
 
 message GetGroupsResponse {
     repeated Group groups = 1;
-    // How many layers this firmware was built with, so a UI can offer the
-    // right range instead of assuming one keyboard's layout.
-    uint32 layer_count = 2;
     // Bitmask of layers the board has reserved; a UI should not offer these.
-    // See reserved-layers in the devicetree binding.
+    // See reserved-layers in the devicetree binding. Field 2 is unused: the
+    // layer count was reported here briefly before it became clear the
+    // standard keymap RPC already answers that, and answers it better.
     uint32 reserved_layers = 3;
 }
 

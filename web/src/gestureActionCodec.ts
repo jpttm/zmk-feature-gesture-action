@@ -47,9 +47,8 @@ export type Response =
   | {
       kind: "getGroups";
       groups: Group[];
-      /* Absent on firmware built before the board started reporting its own
-         layer range; callers fall back rather than guessing. */
-      layerCount?: number;
+      /* Absent on firmware built before the board started declaring this;
+         callers fall back rather than guessing. */
       reservedLayers?: number;
     }
   | { kind: "getDefaults"; totalSlots: number; startSlot: number; actions: Action[] }
@@ -239,13 +238,10 @@ export function decodeResponse(payload: Uint8Array): Response {
       }
       case 6: {
         const groups: Group[] = [];
-        let layerCount: number | undefined;
         let reservedLayers: number | undefined;
         while (r.pos < innerEnd) {
           const it = r.uint32();
-          if (it >>> 3 === 2) {
-            layerCount = r.uint32();
-          } else if (it >>> 3 === 3) {
+          if (it >>> 3 === 3) {
             reservedLayers = r.uint32();
           } else if (it >>> 3 === 1) {
             const groupEnd = r.uint32() + r.pos;
@@ -271,7 +267,7 @@ export function decodeResponse(payload: Uint8Array): Response {
             r.skipType(it & 7);
           }
         }
-        result = { kind: "getGroups", groups, layerCount, reservedLayers };
+        result = { kind: "getGroups", groups, reservedLayers };
         break;
       }
       case 8: {
