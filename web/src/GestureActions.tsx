@@ -224,6 +224,7 @@ export function GestureActions() {
 
       <GroupTabs
         groups={groups}
+        totalSlots={total}
         actions={actions}
         names={names}
         busy={busy}

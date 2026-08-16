@@ -11,6 +11,7 @@ const DIRECTIONS = ["colUp", "colDown", "colLeft", "colRight"] as const;
 
 export function GroupTabs({
   groups,
+  totalSlots,
   actions,
   names,
   busy,
@@ -18,6 +19,7 @@ export function GroupTabs({
   onSetLayers,
 }: {
   groups: Group[];
+  totalSlots: number;
   actions: Action[];
   names: string[];
   busy: boolean;
@@ -27,18 +29,30 @@ export function GroupTabs({
   const t = useT();
   const [tab, setTab] = useState(0);
 
-  if (groups.length === 0) {
-    return <p className="muted small">{t("groupsUnsupported")}</p>;
+  // Firmware without the layer-groups RPC still has slots to edit; it just
+  // cannot say which layers they fire on. Group them four to a tab anyway so
+  // the slots stay reachable, and drop only the layer checkboxes.
+  const layersSupported = groups.length > 0;
+  const shown: Group[] = layersSupported
+    ? groups
+    : Array.from({ length: Math.ceil(totalSlots / 4) }, (_, i) => ({
+        index: i,
+        name: "",
+        activeLayers: 0,
+      }));
+
+  if (shown.length === 0) {
+    return null;
   }
 
-  const group = groups[Math.min(tab, groups.length - 1)];
+  const group = shown[Math.min(tab, shown.length - 1)];
   // Groups own four consecutive slots each, in group order.
   const firstSlot = group.index * 4;
 
   return (
     <div className="groups">
       <div className="tabs" role="tablist">
-        {groups.map((g, i) => (
+        {shown.map((g, i) => (
           <button
             key={g.index}
             role="tab"
@@ -52,33 +66,37 @@ export function GroupTabs({
       </div>
 
       <div className="tabPanel">
-        <fieldset>
-          <legend>{t("appliesTo")}</legend>
-          <p className="muted small">{t("appliesToHint")}</p>
-          <div className="mods">
-            {SELECTABLE_LAYERS.map((layer) => (
-              <label key={layer} className="check">
-                <input
-                  type="checkbox"
-                  disabled={busy}
-                  checked={(group.activeLayers & (1 << layer)) !== 0}
-                  onChange={(e) =>
-                    onSetLayers(
-                      group.index,
-                      e.target.checked
-                        ? group.activeLayers | (1 << layer)
-                        : group.activeLayers & ~(1 << layer),
-                    )
-                  }
-                />
-                {layer}
-              </label>
-            ))}
-          </div>
-          {describeLayers(group.activeLayers).length === 0 && (
-            <p className="muted small">{t("unassigned")}</p>
-          )}
-        </fieldset>
+        {layersSupported ? (
+          <fieldset>
+            <legend>{t("appliesTo")}</legend>
+            <p className="muted small">{t("appliesToHint")}</p>
+            <div className="mods">
+              {SELECTABLE_LAYERS.map((layer) => (
+                <label key={layer} className="check">
+                  <input
+                    type="checkbox"
+                    disabled={busy}
+                    checked={(group.activeLayers & (1 << layer)) !== 0}
+                    onChange={(e) =>
+                      onSetLayers(
+                        group.index,
+                        e.target.checked
+                          ? group.activeLayers | (1 << layer)
+                          : group.activeLayers & ~(1 << layer),
+                      )
+                    }
+                  />
+                  {layer}
+                </label>
+              ))}
+            </div>
+            {describeLayers(group.activeLayers).length === 0 && (
+              <p className="muted small">{t("unassigned")}</p>
+            )}
+          </fieldset>
+        ) : (
+          <p className="muted small">{t("groupsUnsupported")}</p>
+        )}
 
         <table>
           <tbody>
