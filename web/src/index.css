@@ -72,6 +72,30 @@ h2 {
   margin: 0 0 0.35rem;
 }
 
+.footMark {
+  color: var(--muted);
+  margin-left: 0.15rem;
+}
+
+.footnote {
+  border-top: 1px solid var(--line);
+  margin-top: 1.5rem;
+  padding-top: 0.75rem;
+}
+
+.footnote p {
+  margin: 0 0 0.35rem;
+}
+
+.footnote ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.footnote li {
+  margin-bottom: 0.2rem;
+}
+
 .credit {
   margin: 0 0 1.5rem;
 }

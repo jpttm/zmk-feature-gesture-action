@@ -90,15 +90,10 @@ function Ja() {
         既存の配列を崩さずに済みます。
       </p>
       <p className="muted small">
-        ひとつ注意点があります。レイヤータップは押してから約200ミリ秒経つまで
-        レイヤーが切り替わりません。<strong>押した直後にボールを回すと、最初の動きが
-        通常のカーソル移動として処理され、ジェスチャーを取りこぼします。</strong>
-        「押す → 一拍おく → 回す」と操作してください。
-      </p>
-      <p className="muted small">
-        空きキーがあるなら <code>&amp;mo 7</code>（押している間だけレイヤー7）のほうが
-        待ち時間がなく、素早く連続してジェスチャーを出せます。使用頻度が高いなら
-        こちらをおすすめします。
+        レイヤータップは押してから切り替わるまでに少しだけ間があります。押してすぐ
+        回すと最初の動きを拾えないことがあるので、一拍おいてから回してください。
+        空きキーがあるなら <code>&amp;mo 7</code>（押している間だけレイヤー7）でも
+        構いません。こちらは待ちがありません。
       </p>
 
       <h3>このファームウェアの変更点</h3>
@@ -213,14 +208,10 @@ function En() {
         intact.
       </p>
       <p className="muted small">
-        One caveat: a layer tap does not switch layers until about 200&nbsp;ms after
-        the press. <strong>Rolling the ball immediately means the first part of the
-        motion is treated as ordinary cursor movement and the gesture is missed.</strong>{" "}
-        Press, pause for a beat, then roll.
-      </p>
-      <p className="muted small">
-        With a spare key, <code>&amp;mo 7</code> (layer 7 while held) has no such delay
-        and fires gestures back to back. Prefer it if you use gestures often.
+        A layer tap takes a moment to engage, so rolling the ball the instant you press
+        can lose the start of the stroke. Press, pause for a beat, then roll. With a
+        spare key, <code>&amp;mo 7</code> (layer 7 while held) works too and has no such
+        delay.
       </p>
 
       <h3>What this firmware changes</h3>

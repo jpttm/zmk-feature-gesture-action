@@ -371,6 +371,19 @@ export function GestureActions() {
           {t("reload")}
         </button>
       </div>
+
+      {/* Rules that apply to every group's layer picker. Kept here, once, so
+          they are available without shouting from inside each tab. */}
+      <div className="footnote">
+        <p className="muted small">
+          <span className="footMark">*</span> {t("appliesTo")}
+        </p>
+        <ul className="muted small">
+          <li>{t("appliesToHint")}</li>
+          <li>{t("layerTakenHint")}</li>
+          <li>{t("layerScrollNote")}</li>
+        </ul>
+      </div>
     </section>
   );
 }

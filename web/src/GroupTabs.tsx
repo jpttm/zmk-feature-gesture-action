@@ -76,8 +76,13 @@ export function GroupTabs({
       <div className="tabPanel">
         {layersSupported ? (
           <fieldset>
-            <legend>{t("appliesTo")}</legend>
-            <p className="muted small">{t("appliesToHint")}</p>
+            {/* The three rules behind these checkboxes are the same on every
+                tab, so they live once at the foot of the section rather than
+                repeating under each group. */}
+            <legend>
+              {t("appliesTo")}
+              <span className="footMark">*</span>
+            </legend>
             <div className="mods">
               {SELECTABLE_LAYERS.map((layer) => {
                 const mine = (group.activeLayers & (1 << layer)) !== 0;
@@ -112,8 +117,6 @@ export function GroupTabs({
             {describeLayers(group.activeLayers).length === 0 && (
               <p className="muted small">{t("unassigned")}</p>
             )}
-            <p className="muted small">{t("layerTakenHint")}</p>
-            <p className="muted small">{t("layerScrollNote")}</p>
           </fieldset>
         ) : (
           <p className="muted small">{t("groupsUnsupported")}</p>
