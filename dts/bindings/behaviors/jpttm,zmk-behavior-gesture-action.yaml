@@ -45,25 +45,14 @@ properties:
       whose base and pointing layers are fixed by design should say so here
       rather than leave a user to find out.
 
-      This is for policy only. Layers that *cannot* work are derived instead;
-      see input-listeners.
+      This is for policy only, and it is the whole of what you need to write.
+      Layers that *cannot* work are found automatically: every input listener
+      in the tree is walked, and any layer claimed by an override that does not
+      set process-next is reserved too, because an override returns before the
+      base chain a gesture processor sits in. That means moving a scroll layer
+      needs no edit here.
 
       Omit it and no layer is reserved on policy grounds.
-
-  input-listeners:
-    type: phandles
-    description: |
-      The input listeners whose layer overrides should be treated as reserved.
-
-      An override is evaluated before the base chain and returns there unless
-      it sets process-next, so a gesture processor in the base chain never sees
-      events on a layer an override has claimed. A gesture group assigned to
-      such a layer would silently never fire, which is worth preventing rather
-      than documenting.
-
-      Naming the listeners here lets that be derived, so moving a scroll layer
-      does not leave a hand-written list quietly wrong. Overrides that set
-      process-next are ignored, since they do not block anything.
 
   display-name:
     type: string

@@ -311,14 +311,18 @@ static const struct behavior_driver_api behavior_gesture_action_driver_api = {
  *   Policy - layers the board wants kept for ordinary use, listed by hand in
  *   reserved-layers. Nothing can derive these; they are a judgement call.
  *
- *   Fact - layers that cannot work, derived from the input listeners named in
- *   input-listeners. An input-listener override is evaluated before the base
- *   chain and returns there unless it sets process-next, so a gesture
- *   processor sitting in the base chain never sees events on a layer some
- *   override has claimed. A group assigned there would silently never fire.
+ *   Fact - layers that cannot work, found by walking every input listener in
+ *   the tree. An override is evaluated before the base chain and returns there
+ *   unless it sets process-next, so a gesture processor sitting in the base
+ *   chain never sees events on a layer some override has claimed. A group
+ *   assigned there would silently never fire.
  *
  * Deriving the second kind is what keeps this honest: move the scroll layer
  * and the answer follows, instead of going quietly stale.
+ *
+ * The listeners are found by compatible rather than by a phandle from here.
+ * A phandle would close a loop - this node is reached from the listener's own
+ * processors, via their bindings - and devicetree rejects cycles outright.
  */
 #define GA_RESERVED_BIT(idx, node_id) | BIT(DT_PROP_BY_IDX(node_id, reserved_layers, idx))
 
@@ -339,14 +343,11 @@ static const struct behavior_driver_api behavior_gesture_action_driver_api = {
 #define GA_OVERRIDE_BITS(child)                                                                    \
     COND_CODE_1(DT_NODE_HAS_PROP(child, layers), (GA_OVERRIDE_BITS_IF_BLOCKING(child)), ())
 
-#define GA_LISTENER_BITS(node_id, prop, idx)                                                       \
-    DT_FOREACH_CHILD(DT_PHANDLE_BY_IDX(node_id, prop, idx), GA_OVERRIDE_BITS)
+#define GA_LISTENER_BITS(listener) DT_FOREACH_CHILD(listener, GA_OVERRIDE_BITS)
 
-#define GA_DERIVED_BITS(n)                                                                         \
-    COND_CODE_1(DT_INST_NODE_HAS_PROP(n, input_listeners),                                         \
-                (DT_INST_FOREACH_PROP_ELEM(n, input_listeners, GA_LISTENER_BITS)), ())
+#define GA_DERIVED_BITS DT_FOREACH_STATUS_OKAY(zmk_input_listener, GA_LISTENER_BITS)
 
-#define GA_RESERVED_MASK(n) (0 GA_MANUAL_BITS(n) GA_DERIVED_BITS(n))
+#define GA_RESERVED_MASK(n) (0 GA_MANUAL_BITS(n) GA_DERIVED_BITS)
 
 /* Only one gesture_action node is meaningful, so instance 0 answers for the
  * board. DT_INST_FOREACH would just overwrite this with the same value. */
