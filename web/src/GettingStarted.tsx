@@ -24,16 +24,23 @@ export function GettingStarted() {
   );
 }
 
+/**
+ * Both halves, equally weighted. Only the right half actually changed, but the
+ * upstream repo still publishes an older release alongside the newer branch
+ * build, so "the left one is fine as-is" is only true for some readers and
+ * makes them work out which they have. Flashing both is one instruction that
+ * is right for everyone.
+ */
 function Downloads({ lang }: { lang: "ja" | "en" }) {
   return (
     <div className="downloads">
       <a className="dl primary" href={FW_R} download>
         <strong>CLine46_R.uf2</strong>
-        <span>{lang === "ja" ? "右側 — 更新が必要です" : "Right half — required"}</span>
+        <span>{lang === "ja" ? "右側" : "Right half"}</span>
       </a>
-      <a className="dl" href={FW_L} download>
+      <a className="dl primary" href={FW_L} download>
         <strong>CLine46_L.uf2</strong>
-        <span>{lang === "ja" ? "左側 — 更新は不要です" : "Left half — not required"}</span>
+        <span>{lang === "ja" ? "左側" : "Left half"}</span>
       </a>
     </div>
   );
@@ -50,13 +57,14 @@ function Ja() {
       </p>
       <Downloads lang="ja" />
       <p className="muted small">
-        変更は右側のみです。左側は手を加えていないため、更新の必要はありません
-        （念のため対になるものも置いてあります）。
+        <strong>左右の両方を書き込んでください。</strong>
+        変更を加えたのは右側だけですが、左側はお使いの版によって組み合わせが変わります。
+        両方を書き込んでいただくのが確実です。
       </p>
 
       <h3>設定の手順</h3>
       <ol>
-        <li>右側にファームウェアを書き込みます</li>
+        <li>左右の両方にファームウェアを書き込みます</li>
         <li>
           このページでキーボードに接続し、おすすめ設定を選んで書き込みます。
           レイヤー7・8・9・10 にジェスチャーが割り当てられます
@@ -152,13 +160,14 @@ function En() {
       </p>
       <Downloads lang="en" />
       <p className="muted small">
-        Only the right half changed. The left half is untouched and does not need
-        flashing; the matching file is provided for completeness.
+        <strong>Flash both halves.</strong> Only the right half changed, but which
+        left-half build you already have varies, so flashing both is the reliable
+        route.
       </p>
 
       <h3>Setting it up</h3>
       <ol>
-        <li>Flash the right half</li>
+        <li>Flash both halves</li>
         <li>
           Connect on this page, pick a recommended preset and write it. Gestures land
           on layers 7, 8, 9 and 10
