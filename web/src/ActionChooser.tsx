@@ -1,11 +1,5 @@
 import { useState } from "react";
-import {
-  CATEGORIES,
-  findAction,
-  keycodeFor,
-  type NamedAction,
-  type Os,
-} from "./actions";
+import { CATEGORIES, findAction, keycodeFor, type NamedAction, type Os } from "./actions";
 import {
   KEYCODE_GROUPS,
   MODIFIERS,
@@ -13,64 +7,53 @@ import {
   packKeycode,
   splitKeycode,
 } from "./keycodes";
-import { useLang, useT } from "./i18n";
+import { useLang, useT, type StringKey } from "./i18n";
+import { parseBinding, type ParsedBinding } from "./zmkNotation";
+import type { BehaviorInfo } from "./useBehaviors";
 
 /**
  * Picking what a gesture does, by clicking.
  *
- * Assigning something used to mean choosing a ZMK behaviour and then supplying
- * its parameters as numbers, which only worked if you already knew ZMK's
+ * Assigning something used to mean choosing a ZMK behaviour and supplying its
+ * parameters as numbers, which only worked if you already knew ZMK's
  * internals. Gestures almost always send a key combination, so the choice on
- * offer here is a named action; the key picker below covers the rest, and
- * nothing needs typing.
+ * offer is a named action; the key picker and the notation field below cover
+ * the rest.
  */
 export function ActionChooser({
   value,
-  isDefault,
+  canRestore,
+  restoreLabel,
   busy,
   os,
-  onOsChange,
+  behaviors,
   onPick,
-  onReset,
+  onPickBinding,
+  onRestore,
   onCancel,
 }: {
   value: number;
-  isDefault: boolean;
+  canRestore: boolean;
+  restoreLabel: string;
   busy: boolean;
   os: Os;
-  onOsChange: (os: Os) => void;
-  onPick: (keycode: number, persist: boolean) => void;
-  onReset: () => void;
+  behaviors: BehaviorInfo[];
+  onPick: (keycode: number) => void;
+  onPickBinding: (binding: ParsedBinding) => void;
+  onRestore: () => void;
   onCancel: () => void;
 }) {
   const t = useT();
   const { lang } = useLang();
   const [draft, setDraft] = useState(value);
+  const [notation, setNotation] = useState("");
 
   const current = findAction(draft);
   const { mods, base } = splitKeycode(draft);
+  const parsed = notation.trim() ? parseBinding(notation, behaviors) : null;
 
   return (
     <div className="chooser">
-      <div className="chooserHead">
-        <span className="muted small">{t("currentlySends")}</span>
-        <code>{describeAction(draft, lang)}</code>
-        <div className="langToggle">
-          <button
-            className={os === "win" ? "lang on" : "lang"}
-            onClick={() => onOsChange("win")}
-          >
-            Windows
-          </button>
-          <button
-            className={os === "mac" ? "lang on" : "lang"}
-            onClick={() => onOsChange("mac")}
-          >
-            macOS
-          </button>
-        </div>
-      </div>
-
       {CATEGORIES.map((cat) => (
         <div key={cat.key} className="catBlock">
           <h4>{t(cat.key)}</h4>
@@ -93,9 +76,9 @@ export function ActionChooser({
         </div>
       ))}
 
-      <details>
-        <summary className="muted small">{t("pickKeyDirectly")}</summary>
-        <div className="paramBlock">
+      <div className="catBlock">
+        <h4>{t("pickKeyOther")}</h4>
+        <div className="row">
           <div className="mods">
             {MODIFIERS.map((m) => (
               <label key={m.label} className="check">
@@ -112,50 +95,89 @@ export function ActionChooser({
               </label>
             ))}
           </div>
-          <label>
-            {t("keyLabel")}
-            <select
-              value={base}
-              onChange={(e) => setDraft(packKeycode(mods, Number(e.target.value)))}
-            >
-              <option value={0}>{t("pickKey")}</option>
-              {KEYCODE_GROUPS.map((group) => (
-                <optgroup key={group.labelKey} label={t(group.labelKey)}>
-                  {group.keys.map((key) => (
-                    <option key={key.value} value={key.value}>
-                      {key.name}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-          </label>
+          <select
+            value={base}
+            onChange={(e) => setDraft(packKeycode(mods, Number(e.target.value)))}
+          >
+            <option value={0}>{t("pickKey")}</option>
+            {KEYCODE_GROUPS.map((group) => (
+              <optgroup key={group.labelKey} label={t(group.labelKey)}>
+                {group.keys.map((key) => (
+                  <option key={key.value} value={key.value}>
+                    {key.name}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+          <code className="muted">{draft ? describeKeycode(draft) : "—"}</code>
         </div>
-      </details>
+      </div>
 
       <div className="row">
-        <button disabled={busy || draft === 0} onClick={() => onPick(draft, true)}>
+        <button disabled={busy || draft === 0} onClick={() => onPick(draft)}>
           {t("save")}
         </button>
-        <button
-          className="ghost"
-          disabled={busy || draft === 0}
-          onClick={() => onPick(draft, false)}
-          title={t("tryTitle")}
-        >
-          {t("tryWithoutSaving")}
-        </button>
-        {!isDefault && (
-          <button className="ghost" disabled={busy} onClick={onReset}>
-            {t("resetToDefault")}
+        {canRestore && (
+          <button className="ghost" disabled={busy} onClick={onRestore}>
+            {restoreLabel}
           </button>
         )}
         <button className="ghost" disabled={busy} onClick={onCancel}>
           {t("cancel")}
         </button>
       </div>
+
+      <details className="catBlock">
+        <summary>{t("zmkNotation")}</summary>
+        <p className="muted small">{t("zmkHint")}</p>
+        <div className="row">
+          <input
+            type="text"
+            className="grow"
+            value={notation}
+            placeholder="&kp LC(TAB)"
+            onChange={(e) => setNotation(e.target.value)}
+          />
+          <button
+            disabled={busy || !parsed?.ok}
+            onClick={() => parsed?.ok && onPickBinding(parsed.value)}
+          >
+            {t("zmkApply")}
+          </button>
+        </div>
+        {parsed && !parsed.ok && (
+          <p className="warn small">{t(errorKey(parsed.error))}</p>
+        )}
+        {parsed?.ok && (
+          <p className="muted small">
+            {t("zmkOkPrefix")}{" "}
+            <code>
+              {behaviors.find((b) => b.id === parsed.value.behaviorId)?.displayName}
+              {" "}
+              {parsed.value.param1}
+              {parsed.value.param2 ? ` ${parsed.value.param2}` : ""}
+            </code>
+          </p>
+        )}
+      </details>
     </div>
   );
+}
+
+function errorKey(error: string): StringKey {
+  switch (error) {
+    case "empty":
+      return "errEmpty";
+    case "syntax":
+      return "errSyntax";
+    case "unknownBehavior":
+      return "errUnknownBehavior";
+    case "paramCount":
+      return "errParamCount";
+    default:
+      return "errBadParam";
+  }
 }
 
 /** Catalogue name where there is one, otherwise the key combination itself. */

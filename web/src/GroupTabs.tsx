@@ -13,7 +13,6 @@ export function GroupTabs({
   groups,
   totalSlots,
   actions,
-  names,
   busy,
   renderSlot,
   onSetLayers,
@@ -21,7 +20,6 @@ export function GroupTabs({
   groups: Group[];
   totalSlots: number;
   actions: Action[];
-  names: string[];
   busy: boolean;
   renderSlot: (slot: number) => React.ReactNode;
   onSetLayers: (index: number, mask: number) => void;
@@ -60,7 +58,7 @@ export function GroupTabs({
             className={i === tab ? "tab on" : "tab"}
             onClick={() => setTab(i)}
           >
-            {g.name || `${t("groupTab")} ${g.index + 1}`}
+            {`${t("groupTab")} ${g.index + 1}`}
           </button>
         ))}
       </div>
@@ -71,12 +69,22 @@ export function GroupTabs({
             <legend>{t("appliesTo")}</legend>
             <p className="muted small">{t("appliesToHint")}</p>
             <div className="mods">
-              {SELECTABLE_LAYERS.map((layer) => (
-                <label key={layer} className="check">
+              {SELECTABLE_LAYERS.map((layer) => {
+                const mine = (group.activeLayers & (1 << layer)) !== 0;
+                // One layer, one group: two groups on the same layer would
+                // both fire, and which action wins is not something a user
+                // should have to reason about. Whoever holds it releases it.
+                const takenByOther =
+                  !mine &&
+                  groups.some(
+                    (g) => g.index !== group.index && (g.activeLayers & (1 << layer)) !== 0,
+                  );
+                return (
+                <label key={layer} className={takenByOther ? "check taken" : "check"}>
                   <input
                     type="checkbox"
-                    disabled={busy}
-                    checked={(group.activeLayers & (1 << layer)) !== 0}
+                    disabled={busy || takenByOther}
+                    checked={mine}
                     onChange={(e) =>
                       onSetLayers(
                         group.index,
@@ -88,11 +96,13 @@ export function GroupTabs({
                   />
                   {layer}
                 </label>
-              ))}
+                );
+              })}
             </div>
             {describeLayers(group.activeLayers).length === 0 && (
               <p className="muted small">{t("unassigned")}</p>
             )}
+            <p className="muted small">{t("layerTakenHint")}</p>
           </fieldset>
         ) : (
           <p className="muted small">{t("groupsUnsupported")}</p>
@@ -108,7 +118,6 @@ export function GroupTabs({
                   <th scope="row" className="slotCol">
                     {t(dirKey)}
                   </th>
-                  <td className="muted small">{names[slot] || slot}</td>
                   <td>
                     {action && action.behaviorId !== UNSET ? null : null}
                     {renderSlot(slot)}

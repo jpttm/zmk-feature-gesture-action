@@ -19,6 +19,7 @@ import { GroupTabs, describeLayers } from "./GroupTabs";
 import type { Group } from "./gestureActionCodec";
 import { describeParam } from "./ParamEditor";
 import { ActionChooser, describeAction } from "./ActionChooser";
+import type { ParsedBinding } from "./zmkNotation";
 import type { Os } from "./actions";
 
 export function GestureActions() {
@@ -45,7 +46,12 @@ export function GestureActions() {
   const [preview, setPreview] = useState<Preset | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
   const [defaults, setDefaults] = useState<Action[]>([]);
-  const [os, setOs] = useState<Os>("win");
+  const [os, setOs] = useState<Os>(
+    () => (localStorage.getItem("zmk-gesture-action.os") as Os) || "win",
+  );
+  const [appliedPreset, setAppliedPreset] = useState<string | null>(() =>
+    localStorage.getItem("zmk-gesture-action.preset"),
+  );
 
   const refresh = useCallback(async () => {
     setBusy(true);
@@ -192,6 +198,8 @@ export function GestureActions() {
           if (res.kind === "error") throw new Error(res.message);
         }
         setPreview(null);
+        localStorage.setItem("zmk-gesture-action.preset", preset.id);
+        setAppliedPreset(preset.id);
         await refresh();
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
@@ -211,11 +219,18 @@ export function GestureActions() {
   }
 
 
+  // "Restore" should hand back what the user picked at setup, not whatever
+  // the firmware happens to ship - so if a preset was applied, that is the
+  // value to return to. Which preset is browser-local; without it, the
+  // firmware default is the honest fallback.
+  const presetValueFor = (slot: number): number | null => {
+    const preset = PRESETS.find((p) => p.id === appliedPreset);
+    return preset?.actions.find((x) => x.slot === slot)?.keycode ?? null;
+  };
+
   return (
     <section>
-      <h2>
-        {t("gestureActions")} ({total})
-      </h2>
+      <h1 className="pageH1">{t("pageTitle")}</h1>
 
       {behaviorsLoading && <p className="muted">{t("loadingBehaviors")}</p>}
       {error && <p className="warn">{error}</p>}
@@ -224,6 +239,8 @@ export function GestureActions() {
           {t("namesFallback")}（{namesError}）
         </p>
       )}
+
+      <h2 className="sectionH2">{t("presetsHeading")}</h2>
 
       <Presets
         total={total}
@@ -236,11 +253,34 @@ export function GestureActions() {
         onApply={applyPreset}
       />
 
+      <div className="sectionHead">
+        <h2 className="sectionH2">{t("customHeading")}</h2>
+        <div className="langToggle">
+          <button
+            className={os === "win" ? "lang on" : "lang"}
+            onClick={() => {
+              setOs("win");
+              localStorage.setItem("zmk-gesture-action.os", "win");
+            }}
+          >
+            Windows
+          </button>
+          <button
+            className={os === "mac" ? "lang on" : "lang"}
+            onClick={() => {
+              setOs("mac");
+              localStorage.setItem("zmk-gesture-action.os", "mac");
+            }}
+          >
+            macOS
+          </button>
+        </div>
+      </div>
+
       <GroupTabs
         groups={groups}
         totalSlots={total}
         actions={actions}
-        names={names}
         busy={busy}
         onSetLayers={setGroupLayers}
         renderSlot={(slot) => {
@@ -262,19 +302,9 @@ export function GestureActions() {
                 {!shown || shown.behaviorId === UNSET ? (
                   <span className="muted">{t("nothing")}</span>
                 ) : sendsKey ? (
-                  <>
-                    {describeAction(shown.param1, lang)}{" "}
-                    <span className="muted small">
-                      {isDefault ? t("usingDefault") : t("changed")}
-                    </span>
-                  </>
+                  describeAction(shown.param1, lang)
                 ) : (
-                  <>
-                    <code>{summarise(behavior, shown)}</code>{" "}
-                    <span className="muted small">
-                      {isDefault ? t("usingDefault") : t("changed")}
-                    </span>
-                  </>
+                  <code>{summarise(behavior, shown)}</code>
                 )}
               </span>
               <button
@@ -291,21 +321,42 @@ export function GestureActions() {
                   )}
                   <ActionChooser
                     value={sendsKey && shown ? shown.param1 : 0}
-                    isDefault={isDefault}
+                    canRestore={!isDefault || presetValueFor(slot) !== null}
+                    restoreLabel={
+                      presetValueFor(slot) !== null
+                        ? t("restoreToPreset")
+                        : t("restoreToDefault")
+                    }
                     busy={busy}
                     os={os}
-                    onOsChange={setOs}
-                    onPick={(keycode, persist) => {
+                    behaviors={behaviors}
+                    onPick={(keycode) => {
                       if (keyPressId === null) return;
                       apply({
                         kind: "setAction",
                         action: { slot, behaviorId: keyPressId, param1: keycode, param2: 0 },
-                        persist,
+                        persist: true,
                       });
                     }}
-                    onReset={() =>
-                      apply({ kind: "resetAction", slot, persist: true })
+                    onPickBinding={(binding: ParsedBinding) =>
+                      apply({
+                        kind: "setAction",
+                        action: { slot, ...binding },
+                        persist: true,
+                      })
                     }
+                    onRestore={() => {
+                      const preset = presetValueFor(slot);
+                      if (preset !== null && keyPressId !== null) {
+                        apply({
+                          kind: "setAction",
+                          action: { slot, behaviorId: keyPressId, param1: preset, param2: 0 },
+                          persist: true,
+                        });
+                      } else {
+                        apply({ kind: "resetAction", slot, persist: true });
+                      }
+                    }}
                     onCancel={() => setEditing(null)}
                   />
                 </div>

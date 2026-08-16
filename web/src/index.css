@@ -436,3 +436,43 @@ button.chip.on {
   border-color: var(--accent);
   color: #fff;
 }
+
+.pageH1 {
+  font-size: 1.35rem;
+  margin: 0 0 1.25rem;
+  color: var(--fg);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.sectionH2 {
+  font-size: 1rem;
+  color: var(--fg);
+  text-transform: none;
+  letter-spacing: 0;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+label.check.taken {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.chooser details > summary {
+  font-size: 0.9rem;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+input.grow {
+  flex: 1 1 14rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
