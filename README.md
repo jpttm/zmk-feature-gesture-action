@@ -65,6 +65,10 @@ present, so there is no separate `CONFIG_..._STUDIO_RPC` to set.
 
     /* What each slot does before anyone configures it. */
     default-bindings = <&kp LC(T)>, <&kp LC(W)>, /* ... */;
+
+    /* Layers you want kept for ordinary use. Policy only - see
+       "Which layers get offered" below for what is worked out for you. */
+    reserved-layers = <0 1 2>;
 };
 ```
 
@@ -86,14 +90,70 @@ plus what the gesture processor itself uses (about 3.2 KB per instance).
 
 ### Caveats for adopters
 
-- The published web UI hardcodes the CLine46's layer numbering
-  (`SELECTABLE_LAYERS` in `web/src/GroupTabs.tsx`). The firmware side reports
-  its own slot names and groups, so a different keyboard needs that one list
-  changed — or better, that list derived from the device. Patches welcome.
 - Runtime layer assignment for gesture groups (`active-layers`) currently needs
   [a fork of zmk-mouse-gesture](https://github.com/jpttm/zmk-mouse-gesture)
   rather than upstream. Without it, a gesture group's layer is fixed at build
   time and everything else still works.
+- The preset buttons in the web UI assume four gestures per group and sixteen
+  slots. Everything else — slot names, group count, layers — comes from the
+  device, so a different shape degrades to the per-slot editor rather than
+  breaking.
+
+## Design notes
+
+These are the things that cost time to find out. None of them are visible from
+the devicetree alone.
+
+### Put gesture processors in the base chain, not a layer override
+
+An input listener evaluates its layer overrides first, and **returns there**
+unless the override sets `process-next`. Two consequences:
+
+- A gesture processor placed *in* an override only ever runs on that layer, and
+  the mapping is fixed at build time. Putting it in the base chain and letting
+  `active-layers` decide is what makes the layer runtime-settable.
+- A gesture processor in the base chain never sees events on a layer some
+  *other* override has claimed. Assign a gesture group to a layer that has a
+  scroll override and it will silently never fire — no error, no hint.
+
+The second one is why `reserved-layers` is not the whole story.
+
+### Which layers get offered
+
+The settings UI needs three things, from three places:
+
+| | Source |
+|---|---|
+| Which layers exist, and their names | the standard ZMK keymap RPC |
+| Which layers are policy-reserved | `reserved-layers` here |
+| Which layers *cannot* work | derived: every `zmk,input-listener` in the tree is walked, and any layer claimed by an override without `process-next` is reserved too |
+
+Only the middle row is hand-written, because only it is a judgement call.
+Moving a scroll layer needs no edit anywhere.
+
+An earlier attempt had this node name its listeners with a phandle. That does
+not work: the listener references the gesture processors, whose bindings
+reference this node, and devicetree rejects the cycle at configure time.
+Walking by compatible sidesteps it and needs no configuration.
+
+### Layer masks index by position, not by ID
+
+`active-layers` and `reserved-layers` are bitmasks over layer **position** in
+the keymap, which is what `zmk_keymap_layer_active()` takes. ZMK Studio's
+`Layer.id` is a stable identifier that survives reordering and is *not* the
+same number. A UI reading the keymap must use the array position, or a mask
+will point at the wrong layer once anyone reorders anything.
+
+### `active-layers = 0` means every layer
+
+A gesture group you want inactive cannot simply be zeroed. Park it on a layer
+that does not exist — `BIT(31)` — instead.
+
+### One group per layer
+
+Two groups sharing a layer both fire, and which action wins is not something a
+user should have to reason about. The web UI enforces one owner per layer by
+disabling a layer that another group already holds.
 
 ## Web UI
 
