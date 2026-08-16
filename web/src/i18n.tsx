@@ -19,6 +19,10 @@ export const STRINGS = {
     en: "Trackball gesture setup for the CLine46",
   },
   unofficial: { ja: "非公式ツール", en: "Unofficial tool" },
+  connectFirst: {
+    ja: "キーボードに接続すると、ここにジェスチャーの設定が表示されます。",
+    en: "Connect a keyboard and its gesture settings appear here.",
+  },
 
   transportSupport: { ja: "接続方式の対応状況", en: "Transport support" },
   webSerial: { ja: "USB（Web Serial）", en: "Web Serial (USB)" },

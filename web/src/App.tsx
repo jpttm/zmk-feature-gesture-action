@@ -74,6 +74,11 @@ function Page() {
 
         <GettingStarted />
 
+        <div className="cols">
+        <aside className="side">
+        {/* Only useful while deciding how to connect. Once connected it is a
+            settled question taking up the top of the sidebar. */}
+        {!zmk.isConnected && (
         <section>
           <h2>{t("transportSupport")}</h2>
           <ul className="support">
@@ -88,6 +93,7 @@ function Page() {
             <p className="warn">{t("noTransport")}</p>
           )}
         </section>
+        )}
 
         <section>
           <h2>{t("connection")}</h2>
@@ -117,8 +123,6 @@ function Page() {
 
         {zmk.isConnected && (
           <>
-            <GestureActions />
-
             <section>
               <h2>{t("device")}</h2>
               <dl>
@@ -160,6 +164,16 @@ function Page() {
             </details>
           </>
         )}
+        </aside>
+
+        <div className="work">
+          {zmk.isConnected ? (
+            <GestureActions />
+          ) : (
+            <p className="muted placeholder">{t("connectFirst")}</p>
+          )}
+        </div>
+        </div>
 
         <footer>
           <a href="https://github.com/jpttm/zmk-feature-gesture-action">

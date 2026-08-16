@@ -4,6 +4,7 @@
   --muted: #6b7280;
   --line: #e5e7eb;
   --accent: #2563eb;
+  --surface: #f8fafc;
   --ok: #15803d;
   --no: #b91c1c;
   color-scheme: light dark;
@@ -20,6 +21,7 @@
     --muted: #9aa1ac;
     --line: #2c313a;
     --accent: #60a5fa;
+    --surface: #1c1f26;
     --ok: #4ade80;
     --no: #f87171;
   }
@@ -31,6 +33,7 @@
   --muted: #9aa1ac;
   --line: #2c313a;
   --accent: #60a5fa;
+  --surface: #1c1f26;
   --ok: #4ade80;
   --no: #f87171;
 }
@@ -47,13 +50,64 @@ body {
 }
 
 main {
-  max-width: 44rem;
+  max-width: 78rem;
   margin: 0 auto;
   padding: 2rem 1.25rem 4rem;
 }
 
+/* Two columns once there is room: the connection and what the keyboard
+   reports on the left, the thing you came to change on the right. Stacked
+   below that, in this order, because you cannot configure before connecting. */
+.cols {
+  display: grid;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (min-width: 62rem) {
+  .cols {
+    grid-template-columns: 19rem minmax(0, 1fr);
+  }
+
+  .side {
+    position: sticky;
+    top: 2rem;
+  }
+}
+
+.side {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0 1rem;
+}
+
+.side section {
+  padding: 1rem 0;
+}
+
+.side section:first-child {
+  border-top: 0;
+}
+
+/* The work column carries its own headings, so it does not need the rule the
+   sidebar sections use to separate themselves. */
+.work > section {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.placeholder {
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  margin: 0;
+}
+
 h1 {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
+  letter-spacing: 0.01em;
   margin: 0 0 0.25rem;
 }
 
