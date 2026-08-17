@@ -10,7 +10,7 @@ import { useLang } from "./i18n";
  */
 
 /* One place to bump, so the two halves cannot drift apart in name or date. */
-const FW_VERSION = "20260816";
+const FW_VERSION = "20260817";
 const FW_R_NAME = `CLine46_R-${FW_VERSION}.uf2`;
 const FW_L_NAME = `CLine46_L-${FW_VERSION}.uf2`;
 const FW_R = import.meta.env.BASE_URL + "firmware/" + FW_R_NAME;
@@ -56,7 +56,7 @@ function Ja() {
       <h3>専用ファームウェアが必要です</h3>
       <p>
         このページで設定するには、ジェスチャー機能を組み込んだファームウェアが必要です。
-        CLine46 をお使いの方は下記をご利用ください。2026年8月16日時点の CLine46 最新
+        CLine46 をお使いの方は下記をご利用ください。2026年8月17日時点の CLine46 最新
         ファームウェアに、ジェスチャー機能を追加したものです。
       </p>
       <Downloads lang="ja" />
@@ -99,7 +99,7 @@ function Ja() {
       <h3>このファームウェアの変更点</h3>
       <ul>
         <li>ジェスチャー機能の組み込み</li>
-        <li>レイヤー数を11個（0〜10）に拡張</li>
+        <li>レイヤー数を11個（0〜10）に拡張し、7〜10 を GESTURE1〜4 と命名</li>
         <li>ジェスチャー判定の調整による誤爆の低減</li>
         <li>スクロール量と軸スナップを DYA Studio から調整可能に</li>
         <li>Runtime Macro をキーに割り当て可能に</li>
@@ -174,7 +174,7 @@ function En() {
       <p>
         This page can only configure a keyboard running firmware that includes the
         gesture feature. For CLine46, use the build below: the latest CLine46
-        firmware as of 16 August 2026, with gesture support added.
+        firmware as of 17 August 2026, with gesture support added.
       </p>
       <Downloads lang="en" />
       <p className="muted small">
@@ -217,7 +217,7 @@ function En() {
       <h3>What this firmware changes</h3>
       <ul>
         <li>Gesture support</li>
-        <li>Layer count raised to 11 (0–10)</li>
+        <li>Layer count raised to 11 (0–10), with 7–10 named GESTURE1–4</li>
         <li>Tuned gesture recognition, so misfires are rare</li>
         <li>Scroll speed and axis snap adjustable from DYA Studio</li>
         <li>Runtime Macros assignable to keys</li>
