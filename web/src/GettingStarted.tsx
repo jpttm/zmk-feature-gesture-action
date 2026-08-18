@@ -23,6 +23,9 @@ const FW_L = import.meta.env.BASE_URL + "firmware/" + FW_L_NAME;
 const FW_NI_VERSION = "jpttm-no-inertia-20260818";
 const FW_R_NI = import.meta.env.BASE_URL + `firmware/CLine46_R-${FW_NI_VERSION}.uf2`;
 const FW_L_NI = import.meta.env.BASE_URL + `firmware/CLine46_L-${FW_NI_VERSION}.uf2`;
+/* The beginner-facing setup guide: flashing, DYA Studio, what the bundle
+ * holds. Japanese only, like nearly all of this keyboard's users. */
+const GUIDE_URL = import.meta.env.BASE_URL + "guide/";
 
 export function GettingStarted() {
   const { lang } = useLang();
@@ -92,7 +95,11 @@ function Ja() {
 
       <h3>設定の手順</h3>
       <ol>
-        <li>左右の両方にファームウェアを書き込みます</li>
+        <li>
+          左右の両方にファームウェアを書き込みます（Reset スイッチのダブルクリックで
+          USB ストレージとして認識させ、.uf2 をコピー。
+          <a href={GUIDE_URL}>詳しい手順はセットアップガイドへ</a>）
+        </li>
         <li>
           このページでキーボードに接続し、おすすめ設定を選んで書き込みます。
           レイヤー7・8・9・10 にジェスチャーが割り当てられます
@@ -122,26 +129,14 @@ function Ja() {
 
       <h3>CLine46 用ファームウェアに入っているもの</h3>
       <p>
-        上のファームウェアは「書き込むだけで便利機能が揃う」ことを目指した
-        CLine46 用の詰め合わせです。中身は2種類に分かれます。
+        上のファームウェアは「書き込むだけで便利機能が揃う」ことを目指した CLine46 用の
+        詰め合わせです。ジェスチャー機能のほか、慣性スクロール・JIS/US 配列切り替え・
+        スクロール調整・Runtime Macro などを同梱しています。
+        <a href={GUIDE_URL + "#modules"}>それぞれの説明と使い方はセットアップガイドへ</a>。
       </p>
-      <h4>ジェスチャー機能 — このページで設定するもの</h4>
-      <ul>
-        <li>トラックボールジェスチャーの組み込み（判定を実機で調整済みで、誤爆は稀です）</li>
-        <li>レイヤー数を11個（0〜10）に拡張し、7〜10 を GESTURE1〜4 と命名</li>
-      </ul>
-      <h4>その他の同梱機能 — ジェスチャーとは独立した CLine46 向けの改善</h4>
-      <ul>
-        <li>フリックして離すとスクロールが滑らかに減衰する慣性スクロール（mjmjm0101 さんの zmk-input-processor-scroll-inertia。慣性なし版も配布しています）</li>
-        <li>スクロール量と軸スナップを DYA Studio から調整可能に</li>
-        <li>Runtime Macro をキーに割り当て可能に</li>
-        <li>設定ツール接続中の Bluetooth 応答を改善（3110 さんの知見）</li>
-        <li>JIS/US 配列の実行時切り替え（kot149 さんの zmk-layout-shift。Toggle Layout Shift をキーやジェスチャーに割り当てて使用）</li>
-      </ul>
       <p className="muted small">
         他のキーボードでこのページを使う場合に必要なのは、ジェスチャー機能
-        （gesture-action モジュール）だけです。「その他の同梱機能」はこのツールの
-        動作条件ではありません。
+        （gesture-action モジュール）だけです。同梱の他機能は動作条件ではありません。
       </p>
 
       <h3>できること</h3>

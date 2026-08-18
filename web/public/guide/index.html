@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLine46 セットアップガイド — ころころKit</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #14181d; --muted: #5f6a75;
+    --line: #dfe3e8; --accent: #0f7a63; --surface: #f5f7f7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14171c; --fg: #e7eaec; --muted: #98a1ab;
+      --line: #2a2f36; --accent: #4cbfa1; --surface: #1a1e24;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 15.5px/1.8 system-ui, -apple-system, "Segoe UI",
+      "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Noto Sans JP", sans-serif;
+  }
+  main { max-width: 46rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+  h1 { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 0.2rem; }
+  .lede { color: var(--muted); margin: 0 0 2rem; }
+  h2 {
+    font-size: 1.15rem; font-weight: 700; letter-spacing: -0.01em;
+    margin: 2.5rem 0 0.6rem; padding-top: 1.25rem; border-top: 1px solid var(--line);
+  }
+  h3 { font-size: 0.95rem; font-weight: 700; margin: 1.5rem 0 0.4rem; }
+  a { color: var(--accent); }
+  ol, ul { padding-left: 1.4rem; }
+  li { margin-bottom: 0.4rem; }
+  .note {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 8px; padding: 0.75rem 1rem; margin: 1rem 0;
+  }
+  .muted { color: var(--muted); }
+  .small { font-size: 0.85rem; }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.9em; background: var(--surface);
+    padding: 0.1em 0.35em; border-radius: 4px;
+  }
+  footer {
+    margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid var(--line);
+    color: var(--muted); font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>CLine46 セットアップガイド</h1>
+  <p class="lede">
+    初めて CLine46 を手にした方向けの非公式ガイドです。
+    ファームウェアの書き込み方から、日常のカスタマイズまで。
+  </p>
+
+  <h2 id="flash">ファームウェアの書き込み方</h2>
+  <p>
+    CLine46 は左右それぞれにコントローラ（Seeed XIAO nRF52840）が入っていて、
+    ファームウェアも左右別々のファイルを書き込みます。手順はどちらも同じです。
+  </p>
+  <ol>
+    <li>キーボードの片側を <strong>USB ケーブルで PC と接続</strong>します</li>
+    <li>
+      コントローラの小さな <strong>Reset スイッチをダブルクリック</strong>します。
+      場所は
+      <a href="https://note.com/takamaru_fpv/n/nbc75722581e2" target="_blank" rel="noreferrer">takamaru さんの解説ページ</a>
+      が参考になります
+    </li>
+    <li>
+      成功すると PC に <strong>USB ストレージ（<code>XIAO-SENSE</code>）</strong>として
+      認識されます
+    </li>
+    <li>
+      そこへ <strong>.uf2 ファイルをコピー</strong>します。
+      右側には <code>CLine46_R-…</code>、左側には <code>CLine46_L-…</code> の
+      ファイルです
+    </li>
+    <li>
+      コピーが終わると<strong>ドライブが自動的に消えて、キーボードが再起動</strong>します。
+      これで完了です（ドライブが消えるのは正常な動作です）
+    </li>
+  </ol>
+  <div class="note small">
+    <strong>うまくいかないとき</strong>
+    <ul>
+      <li>ダブルクリックの速さを変えて何度か試してください（速すぎ・遅すぎで入らないことがあります）</li>
+      <li>ケーブルが<strong>充電専用（データ線なし）</strong>だとストレージとして認識されません。別のケーブルを試してください</li>
+      <li>書き込みに失敗しても壊れることはまずありません。もう一度 Reset ダブルクリックからやり直せます</li>
+    </ul>
+  </div>
+  <p class="muted small">
+    同じファイルをもう一度書き込むと一瞬で終わることがあります。これは書き込み装置が
+    「内容が同じ部分を飛ばす」ためで、失敗ではありません。
+  </p>
+
+  <h2 id="dya">キーマップのカスタマイズ — DYA Studio</h2>
+  <p>
+    キーの割り当て・マクロ・トラックボールの設定は
+    <a href="https://studio.dya.cormoran.works/" target="_blank" rel="noreferrer">DYA Studio</a>
+    （cormoran さん作）で、再ビルドなしにブラウザから変更できます。
+  </p>
+  <ol>
+    <li>
+      キーボード側で <strong><code>studio_unlock</code> キーを押します</strong>。
+      標準キーマップでは SCROLL レイヤー（レイヤー3）にあります
+    </li>
+    <li>DYA Studio を開き、USB か Bluetooth で接続します</li>
+  </ol>
+  <div class="note small">
+    <strong>Bluetooth でつながらないとき</strong>：
+    ZMK は設定用の通信を「キー入力の出力先」と同じ経路にしか返しません。
+    <strong>USB ケーブルを抜いてから</strong>接続するか、DYA Studio の接続設定で
+    出力優先度を Bluetooth に切り替えてください。また、DYA Studio・ZMK Studio・
+    ころころKit のうち<strong>同時に接続できるのは1つだけ</strong>です。
+  </div>
+
+  <h2 id="gesture">ジェスチャーの設定 — ころころKit</h2>
+  <p>
+    トラックボールジェスチャー（レイヤーキー + ボールの上下左右で発動する操作）の
+    割り当ては <a href="/">ころころKit</a> で変更できます。
+    おすすめ初期設定を選ぶだけでも使い始められます。
+  </p>
+
+  <h2 id="modules">配布ファームウェアに入っているもの</h2>
+  <p>
+    <a href="/">ころころKit のページ</a>で配布しているファームウェアは、
+    2026年8月18日時点の CLine46 最新ファームウェアに次の機能を追加した詰め合わせです。
+  </p>
+
+  <h3>ジェスチャー機能（ころころKit で設定）</h3>
+  <ul>
+    <li>トラックボールジェスチャーの組み込み。判定は実機で調整済みで、誤爆は稀です</li>
+    <li>レイヤーを11個（0〜10）に拡張し、7〜10 を GESTURE1〜4 と命名。初期状態でレイヤー7〜10 に16個のジェスチャーが設定され、レイヤー4〜10 の範囲で最大6グループ・24個まで拡張できます</li>
+  </ul>
+
+  <h3>慣性スクロール（標準版のみ）</h3>
+  <ul>
+    <li>スクロールレイヤーでボールをフリックして離すと、スクロールが滑らかに減衰しながら続きます（mjmjm0101 さんの <a href="https://github.com/mjmjm0101/zmk-input-processor-scroll-inertia" target="_blank" rel="noreferrer">zmk-input-processor-scroll-inertia</a>）</li>
+    <li>好みが分かれる機能なので、<strong>慣性なし版</strong>も並べて配布しています。ファイル名に <code>no-inertia</code> が入っているものがそれです</li>
+  </ul>
+
+  <h3>JIS/US 配列の切り替え</h3>
+  <ul>
+    <li>接続先の PC が JIS 配列設定のときの記号ずれを、キーボード側で吸収できます（kot149 さんの <a href="https://github.com/kot149/zmk-layout-shift" target="_blank" rel="noreferrer">zmk-layout-shift</a>）</li>
+    <li>使い方: DYA Studio かころころKit で <strong>Toggle Layout Shift</strong> をキーやジェスチャーに割り当て、押して切り替えます。起動時は OFF（従来どおり）です</li>
+  </ul>
+
+  <h3>そのほかの改善</h3>
+  <ul>
+    <li><strong>スクロール量と軸スナップ</strong>を DYA Studio の「トラックボール」タブから調整できます（再ビルド不要）</li>
+    <li><strong>Runtime Macro</strong>（DYA Studio の「マクロ&コンボ」で作るマクロ）をキーに割り当てられます</li>
+    <li>設定ツール接続中の <strong>Bluetooth 応答を改善</strong>（3110 さんの知見）。DYA Studio やころころKit の操作の引っかかりが減ります</li>
+  </ul>
+
+  <h2 id="trouble">困ったとき</h2>
+  <ul>
+    <li><strong>設定ツールにつながらない</strong> — ツールをすべて閉じて1つだけ開き直す。駄目ならキーボードの電源を入れ直す</li>
+    <li><strong>書き込み後に動作がおかしい</strong> — もう一度同じファームウェアを書き込み直す。それでも駄目なら前の版に戻す</li>
+    <li>
+      その他お気づきの点は
+      <a href="https://x.com/tu_no_tu" target="_blank" rel="noreferrer">@tu_no_tu</a>
+      までお知らせください
+    </li>
+  </ul>
+
+  <footer>
+    非公式ガイド ·
+    <a href="https://x.com/tu_no_tu" target="_blank" rel="noreferrer">@tu_no_tu</a> ·
+    <a href="https://github.com/jpttm/zmk-feature-gesture-action" target="_blank" rel="noreferrer">GitHub</a>
+    · CLine46 本体の公式情報は
+    <a href="https://github.com/takamaru-fpv/zmk_config_CLine46" target="_blank" rel="noreferrer">takamaru さんのリポジトリ</a>
+    と
+    <a href="https://note.com/takamaru_fpv" target="_blank" rel="noreferrer">note</a>
+    をご覧ください。
+  </footer>
+</main>
+</body>
+</html>
