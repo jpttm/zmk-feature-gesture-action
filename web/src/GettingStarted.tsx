@@ -10,13 +10,11 @@ import { useLang } from "./i18n";
  */
 
 /* One place to bump, so the two halves cannot drift apart in name or date. */
-const FW_VERSION = "20260818";
+const FW_VERSION = "20260818b";
 const FW_R_NAME = `CLine46_R-${FW_VERSION}.uf2`;
 const FW_L_NAME = `CLine46_L-${FW_VERSION}.uf2`;
 const FW_R = import.meta.env.BASE_URL + "firmware/" + FW_R_NAME;
 const FW_L = import.meta.env.BASE_URL + "firmware/" + FW_L_NAME;
-
-const BEHAVIORS_DOC = "https://zmk.dev/docs/keymaps/behaviors";
 
 export function GettingStarted() {
   const { lang } = useLang();
@@ -53,17 +51,29 @@ function Downloads({ lang }: { lang: "ja" | "en" }) {
 function Ja() {
   return (
     <>
-      <h3>専用ファームウェアが必要です</h3>
+      <h3>対応ファームウェアが必要です</h3>
       <p>
-        このページで設定するには、ジェスチャー機能を組み込んだファームウェアが必要です。
-        CLine46 をお使いの方は下記をご利用ください。2026年8月18日時点の CLine46 最新
-        ファームウェアに、ジェスチャー機能を追加したものです。
+        このページで設定できるのは、ジェスチャー機能（gesture-action モジュール）を
+        組み込んだファームウェアを書き込んだキーボードです。
+      </p>
+      <p>
+        <strong>CLine46 をお使いの方</strong>は下記をご利用ください。2026年8月18日時点の
+        CLine46 最新ファームウェアに、ジェスチャー機能などを追加したものです。
       </p>
       <Downloads lang="ja" />
       <p className="muted small">
         <strong>左右の両方を書き込んでください。</strong>
         変更を加えたのは右側だけですが、左側はお使いの版によって組み合わせが変わります。
         両方を書き込んでいただくのが確実です。
+      </p>
+      <p className="muted small">
+        <strong>CLine46 以外のキーボードの方へ:</strong> ファームウェアに対応モジュールを
+        組み込めば、このページはそのまま使えます（表示されるグループやレイヤーは
+        キーボード側から読み取ります）。組み込み方は{" "}
+        <a href="https://github.com/jpttm/zmk-feature-gesture-action/blob/main/README.md" target="_blank" rel="noreferrer">
+          モジュールの README
+        </a>
+        をご覧ください。
       </p>
 
       <h3>設定の手順</h3>
@@ -104,6 +114,7 @@ function Ja() {
         <li>スクロール量と軸スナップを DYA Studio から調整可能に</li>
         <li>Runtime Macro をキーに割り当て可能に</li>
         <li>設定ツール接続中の Bluetooth 応答を改善（3110 さんの知見）</li>
+        <li>JIS/US 配列の実行時切り替え（kot149 さんの zmk-layout-shift。Toggle Layout Shift をキーやジェスチャーに割り当てて使用）</li>
       </ul>
       <p>
         判定を詰めた結果、誤爆が少なく狙ったとおりに発動するようになりました。
@@ -112,9 +123,10 @@ function Ja() {
 
       <h3>できること</h3>
       <p>
-        現状は CLine46 に特化しています。初期状態ではレイヤー7〜10 に16個の
+        上記の CLine46 用ファームウェアでは、初期状態でレイヤー7〜10 に16個の
         ジェスチャーを設定し、レイヤー4〜10 の中から<strong>最大6つのレイヤー・
-        合計24個</strong>まで拡張できます。
+        合計24個</strong>まで拡張できます（グループ数・レイヤー範囲はファームウェア側の
+        設定で、他のキーボードでは異なります）。
       </p>
       <p>
         ジェスチャーを設定したレイヤーでは、
@@ -157,18 +169,11 @@ function Ja() {
 
       <h4>すべてのレイヤーでジェスチャーを使いたい</h4>
       <p>
-        ジェスチャーを設定したレイヤーではマウスカーソルが動かなくなるため、
-        レイヤー4〜10 のみに設定できるようにしています。レイヤー0〜3 は通常の
-        カーソル操作とスクロールのために残しています。
-      </p>
-
-      <h4>ZMK の記法について</h4>
-      <p>
-        動作を直接入力する欄では ZMK の記法が使えます。
-        <a href={BEHAVIORS_DOC} target="_blank" rel="noreferrer">
-          ZMK 公式ドキュメント
-        </a>
-        が参考になります。
+        ジェスチャーを設定したレイヤーではマウスカーソルが動かなくなります。そのため
+        <strong>CLine46 では</strong>レイヤー0〜3（通常のカーソル操作とスクロール）を
+        予約し、レイヤー4〜10 のみに設定できるようにしています。どのレイヤーが
+        予約されるかはキーボードのファームウェアが決めるので、他のキーボードでは
+        異なります。
       </p>
 
       <h4>流用・改変について</h4>
@@ -185,15 +190,27 @@ function En() {
     <>
       <h3>You need the matching firmware</h3>
       <p>
-        This page can only configure a keyboard running firmware that includes the
-        gesture feature. For CLine46, use the build below: the latest CLine46
-        firmware as of 18 August 2026, with gesture support added.
+        This page configures keyboards whose firmware includes the gesture-action
+        module.
+      </p>
+      <p>
+        <strong>On a CLine46</strong>, use the build below: the latest CLine46
+        firmware as of 18 August 2026, with gesture support and more added.
       </p>
       <Downloads lang="en" />
       <p className="muted small">
         <strong>Flash both halves.</strong> Only the right half changed, but which
         left-half build you already have varies, so flashing both is the reliable
         route.
+      </p>
+      <p className="muted small">
+        <strong>On any other keyboard:</strong> integrate the module into its
+        firmware and this page works as-is — groups and layers are read from the
+        device. See{" "}
+        <a href="https://github.com/jpttm/zmk-feature-gesture-action/blob/main/README.en.md" target="_blank" rel="noreferrer">
+          the module README
+        </a>
+        .
       </p>
 
       <h3>Setting it up</h3>
@@ -235,6 +252,7 @@ function En() {
         <li>Scroll speed and axis snap adjustable from DYA Studio</li>
         <li>Runtime Macros assignable to keys</li>
         <li>Faster Bluetooth responses while a settings tool is connected (via 3110's fork)</li>
+        <li>Runtime JIS/US layout switching (kot149's zmk-layout-shift; assign Toggle Layout Shift to a key or gesture)</li>
       </ul>
 
       <h3>What you get</h3>
@@ -283,17 +301,10 @@ function En() {
 
       <h4>Can I put gestures on every layer?</h4>
       <p>
-        A layer with gestures loses cursor movement, so only layers 4–10 are offered.
-        Layers 0–3 stay free for normal pointing and scrolling.
-      </p>
-
-      <h4>ZMK notation</h4>
-      <p>
-        The advanced input field accepts ZMK behaviour notation. The{" "}
-        <a href={BEHAVIORS_DOC} target="_blank" rel="noreferrer">
-          ZMK documentation
-        </a>{" "}
-        is the reference.
+        A layer with gestures loses cursor movement. <strong>On the CLine46</strong>{" "}
+        layers 0–3 stay reserved for normal pointing and scrolling, leaving 4–10 for
+        gestures. The reserved set comes from the keyboard's firmware, so it differs
+        on other keyboards.
       </p>
 
       <h4>Reuse and modification</h4>

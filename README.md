@@ -1,73 +1,73 @@
 # ZMK Gesture Action
 
-*[日本語版はこちら](README.ja.md)*
+*[English version](README.en.md)*
 
-Gestures on a ZMK keyboard whose actions you can change from a web page, without
-rebuilding firmware.
+ZMK キーボードのジェスチャーに割り当てる動作を、ファームウェアを作り直さずに
+ブラウザから変更できるようにするモジュールです。
 
-Settings page: <https://korokoro.ttm.jp/>
+設定ページ: <https://korokoro.ttm.jp/>
 
-## What it does
+## 何ができるか
 
-Hold a layer key, roll the trackball up, and a new browser tab opens. Roll it
-left and you go to the previous tab. Roll down and the tab closes.
+レイヤーキーを押しながらトラックボールを上へ転がすと、新しいタブが開く。左へ
+転がすと前のタブへ移動する。下へ転がすとタブが閉じる。
 
-That much is already possible with
-[zmk-mouse-gesture](https://github.com/kot149/zmk-mouse-gesture). What this
-module adds is that **you can change what each gesture does from a web page**,
-in a couple of seconds, without a toolchain, a rebuild, or a flash.
+ここまでは
+[zmk-mouse-gesture](https://github.com/kot149/zmk-mouse-gesture) だけでできます。
 
-Open the page, connect over USB or Bluetooth, pick a different key, done.
+このモジュールが足すのは、**それぞれのジェスチャーが何をするかを、ブラウザから
+数秒で変更できる**ことです。ビルド環境も、再ビルドも、書き込みも要りません。
 
-## Why it exists
+ページを開いて、USB か Bluetooth で接続して、別のキーを選ぶ。それだけです。
 
-`zmk-mouse-gesture` invokes ordinary ZMK behaviours, and those are written into
-the devicetree at build time. Changing one means rebuilding.
+## なぜ必要か
 
-The obvious workaround is to point each gesture at a
-[runtime macro](https://github.com/cormoran/zmk-feature-runtime-macro), which
-*is* editable at runtime. It works, but there are only 16 macro slots, and a
-keyboard with 16 gestures has none left for actual macros. Gestures and macros
-end up fighting over the same scarce resource.
+`zmk-mouse-gesture` は通常の ZMK ビヘイビアを呼び出しますが、その割り当ては
+devicetree に書かれるためビルド時に固定されます。変えるには作り直しが必要です。
 
-This module gives gestures storage of their own.
+すぐ思いつく回避策は、各ジェスチャーを
+[ランタイムマクロ](https://github.com/cormoran/zmk-feature-runtime-macro)
+に向けることです。実際に動きますが、**マクロの枠は16個しかありません。**
+ジェスチャーを16個作ると、本来のマクロに使える枠がゼロになります。ジェスチャーと
+マクロが同じ乏しい資源を奪い合うことになります。
 
-## How it works
+このモジュールは、ジェスチャーに専用の保存場所を与えます。
 
-`&gesture_action N` is a behaviour that stands in for another behaviour. Slot
-`N` holds a binding — say `&kp LC(T)` — in the keyboard's settings storage.
-When the behaviour runs, it invokes whatever the slot currently holds.
+## 仕組み
+
+`&gesture_action N` は、別のビヘイビアの身代わりになるビヘイビアです。スロット
+`N` はキーボードの設定領域に割り当て（たとえば `&kp LC(T)`）を保持していて、
+実行されるとその時点でスロットに入っているものを呼び出します。
 
 ```
-gesture recognised  →  &gesture_action 0  →  looks up slot 0  →  &kp LC(T)
+ジェスチャー認識  →  &gesture_action 0  →  スロット0を参照  →  &kp LC(T)
 ```
 
-Each slot is seeded from a devicetree default, so a freshly flashed keyboard
-works straight away, before anyone has configured anything. Assign something to
-a slot and the stored value takes over. Reset it and the default comes back.
+各スロットには devicetree で初期値を与えられるので、**書き込んだ直後、何も設定
+していない状態でも動きます。** 何かを割り当てれば保存された値が優先され、
+リセットすれば初期値に戻ります。
 
-The web page reads and writes those slots over ZMK Studio's RPC transport, which
-works over both USB (Web Serial) and Bluetooth (Web Bluetooth).
+設定ページは ZMK Studio の RPC 経由でこのスロットを読み書きします。USB
+（Web Serial）と Bluetooth（Web Bluetooth）の両方で動きます。
 
-**None of this is specific to gestures.** A slot is just a redirectable
-behaviour. Anything that takes a binding — a combo, a macro step, a key
-position — can point at one. Gesture recognition is simply what it was built
-for.
+**この仕組み自体はジェスチャー専用ではありません。** スロットは「差し替え可能な
+ビヘイビア」でしかないので、バインディングを取れるもの — コンボ、マクロの一手、
+キー位置 — なら何でも向けられます。ジェスチャーはたまたま最初の用途だっただけです。
 
-## What you need
+## 必要なもの
 
-- **ZMK with Studio enabled**, and a build that carries a custom RPC subsystem.
-  In practice that means [cormoran's ZMK fork and module
-  set](https://github.com/cormoran), which is what DYA Studio is built on.
-- **This module**, for the slots.
-- **Something to trigger the slots.** `zmk-mouse-gesture` if you want trackball
-  gestures; anything that takes a binding otherwise.
-- **A Chromium browser** (Chrome or Edge) for the settings page. On iOS,
-  [Bluefy](https://apps.apple.com/app/bluefy-web-ble-browser/id1492822055).
+- **Studio を有効にした ZMK**、かつカスタム RPC サブシステムを持つビルド。
+  実質的には [cormoran さんの ZMK フォークとモジュール群](https://github.com/cormoran)
+  を指します。DYA Studio が乗っているものと同じです。
+- **このモジュール**（スロットを提供します）
+- **スロットを叩く何か。** トラックボールジェスチャーなら `zmk-mouse-gesture`、
+  そうでなければバインディングを取れるものなら何でも。
+- **Chromium 系ブラウザ**（Chrome / Edge）。iOS では
+  [Bluefy](https://apps.apple.com/app/bluefy-web-ble-browser/id1492822055)。
 
-## Adding it to a keyboard
+## キーボードへの組み込み方
 
-### 1. Add the module
+### 1. モジュールを追加する
 
 ```yaml
 # config/west.yml
@@ -81,53 +81,55 @@ manifest:
       revision: main
 ```
 
-### 2. Choose how many slots
+### 2. スロット数を決める
 
 ```ini
-# boards/shields/<your board>/<your board>.conf
+# boards/shields/<ボード名>/<ボード名>.conf
 CONFIG_ZMK_GESTURE_ACTION_COUNT=24
 ```
 
-One slot per gesture. Six gesture groups of four directions each needs 24.
+ジェスチャー1つにつきスロット1つです。上下左右4方向のグループを6つ持つなら 24
+になります。
 
-The RPC handler switches itself on when a `gesture_action` node exists, so
-there is no separate `CONFIG_..._STUDIO_RPC` to remember.
+RPC のハンドラは `gesture_action` ノードがあれば自動で有効になるので、
+`CONFIG_..._STUDIO_RPC` のような設定を別途書く必要はありません。
 
-### 3. Declare the node
+### 3. ノードを宣言する
 
 ```dts
 #include <behaviors/gesture_action.dtsi>
 
 &gesture_action {
-    /* Shown in the settings UI instead of a bare slot number. Keep them
-       short - they travel over RPC with a 24-byte cap. */
+    /* 設定画面にスロット番号ではなくこの名前が出る。
+       RPC で運ぶ都合上 24 バイト上限なので短めに。 */
     slot-names =
         "G1 Up", "G1 Down", "G1 Left", "G1 Right",
         "G2 Up", "G2 Down", "G2 Left", "G2 Right";
 
-    /* What each slot does before anyone configures it, in slot order. */
+    /* 何も設定していないときの動作。スロット番号順に並べる。 */
     default-bindings =
         <&kp LC(T)>, <&kp LC(W)>, <&kp LS(LC(TAB))>, <&kp LC(TAB)>,
         <&kp LG(TAB)>, <&kp LG(D)>, <&kp LC(LG(LEFT))>, <&kp LC(LG(RIGHT))>;
 
-    /* Layers you want kept for ordinary use, so the settings page does not
-       offer them for gestures. Policy only - see "Which layers get offered". */
+    /* 通常用途のために空けておきたいレイヤー。設定画面がジェスチャーの
+       割り当て先として出さなくなる。方針の分だけ書けばよい
+       （後述「どのレイヤーが選択肢に出るか」を参照）。 */
     reserved-layers = <0 1 2>;
 };
 ```
 
-### 4. Point something at the slots
+### 4. スロットを叩くものを用意する
 
-With `zmk-mouse-gesture`, one processor instance per gesture group:
+`zmk-mouse-gesture` の場合、グループごとにプロセッサのインスタンスを1つ置きます。
 
 ```dts
 zip_gesture_1: zip_gesture_1 {
     compatible = "zmk,input-processor-mouse-gesture";
     #input-processor-cells = <0>;
     display-name = "Group 1";
-    active-layers = <BIT(7)>;   /* which layer this group acts on */
+    active-layers = <BIT(7)>;   /* このグループが効くレイヤー */
     always-active;
-    suppress-movement;          /* freeze the cursor while gesturing */
+    suppress-movement;          /* ジェスチャー中カーソルを止める */
     enable-eager-mode;
 
     up    { pattern = <GESTURE_UP>;    bindings = <&gesture_action 0>; };
@@ -137,8 +139,8 @@ zip_gesture_1: zip_gesture_1 {
 };
 ```
 
-Then add the processors to your input listener's **base** chain — not a layer
-override. See the design notes for why that matters.
+そして input listener の**ベースチェーン**に並べます。レイヤー上書き
+（`layers = <N>`）**ではありません。** 理由は後述の設計メモにあります。
 
 ```dts
 &trackball_listener {
@@ -147,9 +149,9 @@ override. See the design notes for why that matters.
 };
 ```
 
-### 5. Name your layers
+### 5. レイヤーに名前を付ける
 
-Optional, but the settings page shows them, and "GESTURE1" beats "7".
+任意ですが、設定画面に表示されるので「GESTURE1」のほうが「7」より分かりやすいです。
 
 ```dts
 layer_7 {
@@ -158,92 +160,90 @@ layer_7 {
 };
 ```
 
-A working example of all of this is in the
-[CLine46 config](https://github.com/jpttm/zmk_config_CLine46/blob/feat/gesture-action/boards/shields/CLine46/CLine46_R.overlay).
+実際に動いている一式は
+[CLine46 の設定](https://github.com/jpttm/zmk_config_CLine46/blob/feat/gesture-action/boards/shields/CLine46/CLine46_R.overlay)
+にあります。
 
-### What it costs
+### どれくらい消費するか
 
-Measured on an nRF52840 with 24 slots: roughly 1 KB of RAM for the slot table,
-plus about 3.2 KB per gesture processor instance. A CLine46 build with six
-groups lands at about 60% RAM.
+nRF52840 でスロット24個の実測で、スロット表に約 1 KB、ジェスチャープロセッサ
+1インスタンスあたり約 3.2 KB です。グループ6個の CLine46 のビルドで RAM 使用率
+は約 60% になります。
 
-### Things to know before adopting
+### 採用前に知っておいたほうがよいこと
 
-- Runtime layer assignment for gesture groups (`active-layers`) currently needs
-  [a fork of zmk-mouse-gesture](https://github.com/jpttm/zmk-mouse-gesture).
-  Without it, a group's layer is fixed at build time and everything else still
-  works. [Upstreaming is in
-  progress](https://github.com/kot149/zmk-mouse-gesture/pull/11).
-- The preset buttons on the settings page assume four gestures per group and
-  sixteen slots. Everything else — slot names, group count, layers — comes from
-  the device, so a different shape falls back to the per-slot editor rather than
-  breaking.
+- グループのレイヤーを実行時に変更する機能（`active-layers`）は、現状
+  [zmk-mouse-gesture のフォーク](https://github.com/jpttm/zmk-mouse-gesture)
+  を必要とします。無くてもレイヤーがビルド時固定になるだけで、他は動きます。
+  [本家への取り込みを進めているところです](https://github.com/kot149/zmk-mouse-gesture/pull/11)。
+- 設定ページの「おすすめ初期設定」は、1グループ4方向・16スロットを前提にして
+  います。それ以外（スロット名・グループ数・レイヤー）はすべてデバイスから
+  読んでいるので、構成が違っても壊れることはなく、個別編集に落ちるだけです。
 
-## Design notes
+## 設計メモ
 
-These cost time to work out. None of them are visible from the devicetree.
+分かるまでに時間のかかった事柄です。devicetree を読んでも見えません。
 
-### Put gesture processors in the base chain, not a layer override
+### ジェスチャーはベースチェーンに置く。レイヤー上書きではない
 
-An input listener evaluates its layer overrides first, and **returns there**
-unless the override sets `process-next`. Two consequences follow:
+input listener はレイヤー上書きを先に評価し、`process-next` が無い限り
+**そこで処理を打ち切ります。** ここから2つの結果が出ます。
 
-- A gesture processor placed *inside* an override only ever runs on that layer,
-  and the mapping is fixed at build time. Putting it in the base chain and
-  letting `active-layers` decide is what makes the layer runtime-settable.
-- A gesture processor in the base chain never sees events on a layer some
-  *other* override has claimed. Assign a gesture group to a layer that has a
-  scroll override and it will silently never fire. No error, no hint, nothing in
-  the log.
+- 上書きの**中に**ジェスチャープロセッサを置くと、そのレイヤーでしか動かず、
+  対応がビルド時に固定されます。ベースチェーンに置いて `active-layers` に
+  判断させるからこそ、レイヤーを実行時に変更できます。
+- ベースチェーンに置いたプロセッサは、**他の**上書きが押さえているレイヤーでは
+  イベントを一切受け取りません。スクロール用の上書きがあるレイヤーに
+  ジェスチャーを割り当てると、**何の反応もなく、エラーもログも出ません。**
 
-The second is why `reserved-layers` alone is not enough.
+後者があるため、`reserved-layers` だけでは足りません。
 
-### Which layers get offered
+### どのレイヤーが選択肢に出るか
 
-The settings page needs three things, from three places:
+設定ページは3つの情報を、3つの別々の場所から得ています。
 
-| What | Where it comes from |
+| 情報 | 出所 |
 |---|---|
-| Which layers exist, and their names | the standard ZMK keymap RPC |
-| Which layers are reserved by policy | `reserved-layers` on this node |
-| Which layers *cannot* work | derived — every `zmk,input-listener` in the tree is walked, and any layer claimed by an override without `process-next` is reserved too |
+| どのレイヤーが存在し、名前は何か | ZMK 標準のキーマップ RPC |
+| 方針として空けておきたいレイヤー | このノードの `reserved-layers` |
+| そもそも動作しないレイヤー | 自動導出。devicetree 上の `zmk,input-listener` を全て走査し、`process-next` の無い上書きが押さえているレイヤーを追加 |
 
-Only the middle row is hand-written, because only it is a judgement call. Move
-your scroll layer and nothing needs editing.
+手書きなのは真ん中だけです。そこだけが人の判断だからです。スクロールのレイヤーを
+動かしても、どこも書き換える必要はありません。
 
-An earlier attempt had this node name its listeners with a phandle. That does
-not work: the listener references the gesture processors, whose bindings
-reference this node, and devicetree rejects the cycle at configure time.
-Walking by compatible sidesteps the loop and needs no configuration at all.
+当初は、このノードから listener を phandle で指す実装にしていました。これは
+**成立しません。** listener がジェスチャープロセッサを参照し、そのバインディングが
+このノードを参照するため、参照が循環して devicetree に拒否されます。compatible
+で走査すれば循環せず、しかも設定を一切書かずに済みます。
 
-### Layer masks index by position, not by ID
+### マスクはレイヤーの「位置」を指す。ID ではない
 
-`active-layers` and `reserved-layers` are bitmasks over a layer's **position**
-in the keymap, which is what `zmk_keymap_layer_active()` takes. ZMK Studio's
-`Layer.id` is a stable identifier that survives reordering and is *not* the same
-number. A client reading the keymap must use the array position, or a mask will
-point at the wrong layer as soon as anyone reorders anything.
+`active-layers` と `reserved-layers` はキーマップ上の**位置**に対するビットマスク
+です。`zmk_keymap_layer_active()` が取るのがこれだからです。ZMK Studio の
+`Layer.id` は並べ替えても変わらない識別子で、**位置とは別の数**です。キーマップを
+読むクライアントは配列の順番を使う必要があります。混同すると、誰かがレイヤーを
+並べ替えた瞬間にマスクが別のレイヤーを指します。
 
-### `active-layers = 0` means every layer
+### `active-layers = 0` は「全レイヤー」の意味
 
-A gesture group you want switched off cannot simply be zeroed — zero is the
-"no filter" value. Park it on a layer that does not exist, `BIT(31)`, instead.
+無効にしたいグループを 0 にしてはいけません。0 は「絞り込みなし」だからです。
+存在しないレイヤー、`BIT(31)` に退避させてください。
 
-### One group per layer
+### 1つのレイヤーに1グループ
 
-Two groups sharing a layer both fire, and which action wins is not something a
-user should have to reason about. The settings page enforces one owner per
-layer by disabling a layer another group already holds.
+2つのグループが同じレイヤーを共有すると両方が発火します。どちらが勝つかを利用者に
+考えさせるべきではないので、設定ページは他のグループが押さえているレイヤーを
+選べないようにしています。
 
-### Freezing the cursor
+### カーソルを止める
 
-Without `suppress-movement`, drawing a gesture also flings the pointer across
-the screen. The upstream implementation returns `ZMK_INPUT_PROC_STOP` to
-suppress it, which ZMK's input listener discards on the layer-override path — so
-the option silently does nothing there. The fork zeroes the event value instead,
-which works from anywhere in the chain.
+`suppress-movement` が無いと、ジェスチャーを描くたびにポインタが画面を飛び回り
+ます。本家の実装は `ZMK_INPUT_PROC_STOP` を返して抑制しようとしますが、ZMK の
+input listener はレイヤー上書きの経路でこれを握りつぶすため、**そこでは何も
+起きません。** フォークではイベントの値を 0 にする方式に変えてあり、チェーンの
+どこに置いても効きます。
 
-## Working on the settings page
+## 設定ページの開発
 
 ```bash
 cd web
@@ -251,38 +251,39 @@ npm install
 npm run dev
 ```
 
-The page talks to the keyboard through
-[@cormoran/zmk-studio-react-hook](https://github.com/cormoran/react-zmk-studio).
-Wire protocol lives in `proto/jpttm/gesture_action/gesture_action.proto`, with a
-hand-written codec in `web/src/gestureActionCodec.ts`.
+キーボードとの通信は
+[@cormoran/zmk-studio-react-hook](https://github.com/cormoran/react-zmk-studio)
+経由です。プロトコル定義は
+`proto/jpttm/gesture_action/gesture_action.proto`、そのデコーダは
+`web/src/gestureActionCodec.ts` に手書きで置いてあります。
 
-## Acknowledgements
+## 謝辞
 
-Very little of what makes this work is mine.
+このモジュールを成立させている部分の大半は、私の仕事ではありません。
 
-- **[ZMK](https://zmk.dev/)** — the firmware everything here is a guest in.
-- **[cormoran](https://github.com/cormoran)** — the custom Studio RPC subsystem
-  mechanism this module registers with, the
-  [runtime input processor](https://github.com/cormoran/zmk-module-runtime-input-processor),
-  [runtime macros](https://github.com/cormoran/zmk-feature-runtime-macro),
-  [device info](https://github.com/cormoran/zmk-feature-device-info) and the rest
-  of the module set, plus
-  [@cormoran/zmk-studio-react-hook](https://github.com/cormoran/react-zmk-studio),
-  which is the only reason the browser page exists at all. DYA Studio is the
-  model this settings page is imitating.
-- **[kot149](https://github.com/kot149/zmk-mouse-gesture)** — the gesture
-  recognition itself. This module only decides what a recognised gesture does.
-- **[takamaru](https://github.com/takamaru-fpv/zmk_config_CLine46)** — the
-  CLine46 and its firmware, which is what all of this was built for.
-- **[badjeff](https://github.com/badjeff/zmk-pmw3610-driver)** — the PMW3610
-  trackball driver.
+- **[ZMK](https://zmk.dev/)** — すべての土台となるファームウェア本体。
+- **[cormoran](https://github.com/cormoran) さん** — このモジュールが登録している
+  カスタム Studio RPC サブシステムの仕組み、
+  [ランタイム入力プロセッサ](https://github.com/cormoran/zmk-module-runtime-input-processor)、
+  [ランタイムマクロ](https://github.com/cormoran/zmk-feature-runtime-macro)、
+  [デバイス情報](https://github.com/cormoran/zmk-feature-device-info)
+  をはじめとするモジュール群、そして
+  [@cormoran/zmk-studio-react-hook](https://github.com/cormoran/react-zmk-studio)。
+  ブラウザから設定できるのは、ひとえにこれらがあるからです。設定ページの手本に
+  したのも DYA Studio です。
+- **[kot149](https://github.com/kot149/zmk-mouse-gesture) さん** — ジェスチャー
+  認識そのもの。このモジュールは「認識されたジェスチャーが何をするか」を
+  決めているだけです。
+- **[takamaru](https://github.com/takamaru-fpv/zmk_config_CLine46) さん** —
+  CLine46 とそのファームウェア。すべてはこのキーボードのために作られました。
+- **[badjeff](https://github.com/badjeff/zmk-pmw3610-driver) さん** — PMW3610
+  トラックボールドライバ。
 
-## Licence
+## ライセンス
 
-MIT, so that it stays easy for other projects to adopt. Please do — I would be
-glad to see this in other configuration tools or firmware distributions.
+MIT です。他のプロジェクトが取り込みやすいようにするためなので、**どうぞ自由に
+お使いください。** 別の設定ツールや配布ファームウェアで活用いただけると嬉しいです。
 
-This project deliberately takes nothing from
-[DYA Studio](https://github.com/cormoran/dya-studio), which is AGPL-3.0. Reading
-it to understand the RPC protocol is one thing; copying from it would have forced
-this module to AGPL too.
+このプロジェクトは [DYA Studio](https://github.com/cormoran/dya-studio)
+（AGPL-3.0）からコードを一切取っていません。RPC の仕組みを理解するために読むのと、
+コードを写すのは別の話で、写していればこのモジュールも AGPL になっていました。

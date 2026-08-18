@@ -61,8 +61,12 @@ function Page() {
                 @tu_no_tu
               </a>{" "}
               ·{" "}
-              <a href="https://github.com/jpttm" target="_blank" rel="noreferrer">
-                GitHub jpttm
+              <a
+                href="https://github.com/jpttm/zmk-feature-gesture-action"
+                target="_blank"
+                rel="noreferrer"
+              >
+                GitHub
               </a>{" "}
               · ZMK
             </p>
