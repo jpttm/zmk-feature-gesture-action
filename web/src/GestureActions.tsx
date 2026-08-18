@@ -568,7 +568,10 @@ function Presets({
 
 /** Presets assign key presses, so they need that behaviour's id. */
 function isKeyPress(displayName: string): boolean {
-  return displayName.toLowerCase().replace(/[\s_-]/g, "") === "keypress";
+  // "keypress" is plain zmk; the layout-shift module overrides &kp keeping the
+  // node name but may report its own display name, so accept that form too.
+  const n = displayName.toLowerCase().replace(/[\s_-]/g, "");
+  return n === "keypress" || n === "layoutshiftkeypress" || n === "keypresswithlayoutshift";
 }
 
 /** One-line summary of a binding, using the keyboard's own parameter metadata. */
