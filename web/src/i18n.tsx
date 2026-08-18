@@ -170,6 +170,14 @@ export const STRINGS = {
     en: "Layers used by another group cannot be picked. Clear them there first.",
   },
   pickKeyOther: { ja: "一覧にないキーを選ぶ", en: "Pick another key" },
+  deviceBehaviors: {
+    ja: "このキーボードの機能",
+    en: "This keyboard's own functions",
+  },
+  deviceBehaviorsHint: {
+    ja: "接続中のキーボードが持つ、キー入力以外の機能です。押すとすぐ保存されます。",
+    en: "Functions this keyboard reports beyond plain keys. Clicking assigns immediately.",
+  },
   zmkNotation: { ja: "ZMK の記法で直接入力（上級者向け）", en: "Type ZMK notation (advanced)" },
   zmkHint: {
     ja: "例: &kp LC(TAB) / &mo 3 / &kp C_VOL_UP",

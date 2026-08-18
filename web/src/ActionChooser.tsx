@@ -49,6 +49,17 @@ export function ActionChooser({
   const [notation, setNotation] = useState("");
 
   const current = findAction(draft);
+
+  // Behaviours this keyboard reports that need no parameters - layout-shift
+  // toggles, bootloader, caps word and the like. Clicking one assigns the
+  // behaviour directly, so nothing here requires knowing ZMK notation.
+  // Transparent is omitted: in a gesture slot it only masks the default in a
+  // way that is indistinguishable from "nothing", and the reset button below
+  // already covers that intent.
+  const deviceActions = behaviors
+    .filter((b) => b.param1.length === 0 && b.param2.length === 0)
+    .filter((b) => b.displayName.toLowerCase() !== "transparent")
+    .sort((a, b) => a.displayName.localeCompare(b.displayName));
   const { mods, base } = splitKeycode(draft);
   const parsed = notation.trim() ? parseBinding(notation, behaviors) : null;
 
@@ -75,6 +86,27 @@ export function ActionChooser({
           </div>
         </div>
       ))}
+
+      {deviceActions.length > 0 && (
+        <div className="catBlock">
+          <h4>{t("deviceBehaviors")}</h4>
+          <div className="chips">
+            {deviceActions.map((b) => (
+              <button
+                key={b.id}
+                className="chip"
+                disabled={busy}
+                onClick={() =>
+                  onPickBinding({ behaviorId: b.id, param1: 0, param2: 0 })
+                }
+              >
+                {b.displayName}
+              </button>
+            ))}
+          </div>
+          <p className="muted small">{t("deviceBehaviorsHint")}</p>
+        </div>
+      )}
 
       <div className="catBlock otherKeys">
         <h4>{t("pickKeyOther")}</h4>

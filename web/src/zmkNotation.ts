@@ -94,6 +94,11 @@ const LABEL_TO_DISPLAY: Record<string, string> = {
   sys_reset: "Reset",
   rmacro: "Runtime Macro",
   gesture_action: "Gesture Action",
+  kpls: "Key Press with Layout Shift",
+  mtls: "Mod-Tap with Layout Shift",
+  tog_ls: "Toggle Layout Shift",
+  tog_ls_on: "Toggle Layout Shift On",
+  tog_ls_off: "Toggle Layout Shift Off",
 };
 
 export interface ParsedBinding {
