@@ -123,7 +123,19 @@ function Ja() {
 
       <h3>よくある質問</h3>
 
-      <h4>つながらない</h4>
+      <h4>Bluetooth でつながらない</h4>
+      <p>
+        <strong>USB ケーブルを抜いてから接続してください。</strong>
+        ZMK は設定用の通信を「キー入力の出力先」と同じ経路にしか返しません。USB が
+        繋がっていると出力先が USB になるため、Bluetooth 側に要求を送っても応答が
+        返らず、接続がタイムアウトします。
+      </p>
+      <p className="muted small">
+        USB を挿したまま使いたい場合は、DYA Studio の接続設定で出力優先度を
+        Bluetooth に切り替えてください。
+      </p>
+
+      <h4>それでもつながらない</h4>
       <p>
         DYA Studio・ZMK Studio・このツールのうち、
         <strong>同時に開けるのは1つだけ</strong>です。いったんすべて閉じてから、
@@ -237,7 +249,19 @@ function En() {
 
       <h3>FAQ</h3>
 
-      <h4>It will not connect</h4>
+      <h4>It will not connect over Bluetooth</h4>
+      <p>
+        <strong>Unplug the USB cable first.</strong> ZMK answers configuration
+        requests only on whichever transport it is currently sending keystrokes to.
+        With USB connected that is USB, so writes to the Bluetooth characteristic get
+        no reply and the connection times out.
+      </p>
+      <p className="muted small">
+        To keep USB plugged in, switch the output priority to Bluetooth in DYA
+        Studio's connection settings.
+      </p>
+
+      <h4>It still will not connect</h4>
       <p>
         Only <strong>one</strong> of DYA Studio, ZMK Studio and this page can be
         connected at a time. Close all of them, then open just the one you want. If it
