@@ -33,14 +33,20 @@ const CREDITS: Credit[] = [
   {
     who: "kot149",
     href: "https://github.com/kot149/zmk-mouse-gesture",
-    ja: "ジェスチャー認識（zmk-mouse-gesture）",
-    en: "gesture recognition (zmk-mouse-gesture)",
+    ja: "ジェスチャー認識（zmk-mouse-gesture）と配列切り替え（zmk-layout-shift）",
+    en: "gesture recognition (zmk-mouse-gesture) and layout switching (zmk-layout-shift)",
   },
   {
     who: "takamaru",
     href: "https://github.com/takamaru-fpv/zmk_config_CLine46",
     ja: "CLine46 本体とそのファームウェア",
     en: "the CLine46 and its firmware",
+  },
+  {
+    who: "mjmjm0101",
+    href: "https://github.com/mjmjm0101/zmk-input-processor-scroll-inertia",
+    ja: "慣性スクロール（zmk-input-processor-scroll-inertia）",
+    en: "inertial scrolling (zmk-input-processor-scroll-inertia)",
   },
   {
     who: "badjeff",

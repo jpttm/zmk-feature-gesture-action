@@ -9,12 +9,20 @@ import { useLang } from "./i18n";
  * readable as a whole is worth more here than sharing the markup.
  */
 
-/* One place to bump, so the two halves cannot drift apart in name or date. */
-const FW_VERSION = "20260818b";
+/* One place to bump, so the four files cannot drift apart in name or date.
+ * "jpttm" in the name marks whose build this is - it keeps these apart from
+ * takamaru's official CLine46_R.uf2 in a download folder, and a support
+ * conversation can start from the filename alone. */
+const FW_VERSION = "jpttm-20260818";
 const FW_R_NAME = `CLine46_R-${FW_VERSION}.uf2`;
 const FW_L_NAME = `CLine46_L-${FW_VERSION}.uf2`;
 const FW_R = import.meta.env.BASE_URL + "firmware/" + FW_R_NAME;
 const FW_L = import.meta.env.BASE_URL + "firmware/" + FW_L_NAME;
+/* Same bundle minus scroll inertia, for anyone who prefers scrolling to stop
+ * when the ball does. Named by what is absent, so the file explains itself. */
+const FW_NI_VERSION = "jpttm-no-inertia-20260818";
+const FW_R_NI = import.meta.env.BASE_URL + `firmware/CLine46_R-${FW_NI_VERSION}.uf2`;
+const FW_L_NI = import.meta.env.BASE_URL + `firmware/CLine46_L-${FW_NI_VERSION}.uf2`;
 
 export function GettingStarted() {
   const { lang } = useLang();
@@ -65,6 +73,12 @@ function Ja() {
         <strong>左右の両方を書き込んでください。</strong>
         変更を加えたのは右側だけですが、左側はお使いの版によって組み合わせが変わります。
         両方を書き込んでいただくのが確実です。
+      </p>
+      <p className="muted small">
+        標準版にはフリック後にスクロールが滑る「慣性スクロール」が入っています。
+        慣性なしがいい場合はこちらをどうぞ（
+        <a href={FW_R_NI} download>右側</a> / <a href={FW_L_NI} download>左側</a>
+        ）。それ以外の中身は同一です。
       </p>
       <p className="muted small">
         <strong>CLine46 以外のキーボードの方へ:</strong> ファームウェアに対応モジュールを
@@ -118,6 +132,7 @@ function Ja() {
       </ul>
       <h4>その他の同梱機能 — ジェスチャーとは独立した CLine46 向けの改善</h4>
       <ul>
+        <li>フリックして離すとスクロールが滑らかに減衰する慣性スクロール（mjmjm0101 さんの zmk-input-processor-scroll-inertia。慣性なし版も配布しています）</li>
         <li>スクロール量と軸スナップを DYA Studio から調整可能に</li>
         <li>Runtime Macro をキーに割り当て可能に</li>
         <li>設定ツール接続中の Bluetooth 応答を改善（3110 さんの知見）</li>
@@ -212,6 +227,13 @@ function En() {
         route.
       </p>
       <p className="muted small">
+        The standard build includes inertial scrolling - flick and release, and the
+        scroll coasts to a stop. If you would rather scrolling stop with the ball,
+        take the no-inertia build (
+        <a href={FW_R_NI} download>right</a> / <a href={FW_L_NI} download>left</a>
+        ). Everything else is identical.
+      </p>
+      <p className="muted small">
         <strong>On any other keyboard:</strong> integrate the module into its
         firmware and this page works as-is — groups and layers are read from the
         device. See{" "}
@@ -264,6 +286,7 @@ function En() {
       </ul>
       <h4>Also bundled — CLine46 improvements independent of gestures</h4>
       <ul>
+        <li>Inertial scrolling - flick, release, and it coasts (mjmjm0101's zmk-input-processor-scroll-inertia; a no-inertia build is offered too)</li>
         <li>Scroll speed and axis snap adjustable from DYA Studio</li>
         <li>Runtime Macros assignable to keys</li>
         <li>Faster Bluetooth responses while a settings tool is connected (via 3110's fork)</li>
