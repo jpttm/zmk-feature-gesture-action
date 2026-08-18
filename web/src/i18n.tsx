@@ -15,8 +15,8 @@ type Entry = { ja: string; en: string };
 export const STRINGS = {
   title: { ja: "ころころKit", en: "Korokoro Kit" },
   subtitle: {
-    ja: "CLine46 トラックボールジェスチャー設定ツール",
-    en: "Trackball gesture setup for the CLine46",
+    ja: "トラックボールジェスチャー設定ツール",
+    en: "Trackball gesture setup tool",
   },
   unofficial: { ja: "非公式ツール", en: "Unofficial tool" },
   devStatus: {
