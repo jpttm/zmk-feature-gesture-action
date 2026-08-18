@@ -10,7 +10,7 @@ import { useLang } from "./i18n";
  */
 
 /* One place to bump, so the two halves cannot drift apart in name or date. */
-const FW_VERSION = "20260817";
+const FW_VERSION = "20260818";
 const FW_R_NAME = `CLine46_R-${FW_VERSION}.uf2`;
 const FW_L_NAME = `CLine46_L-${FW_VERSION}.uf2`;
 const FW_R = import.meta.env.BASE_URL + "firmware/" + FW_R_NAME;
@@ -56,7 +56,7 @@ function Ja() {
       <h3>専用ファームウェアが必要です</h3>
       <p>
         このページで設定するには、ジェスチャー機能を組み込んだファームウェアが必要です。
-        CLine46 をお使いの方は下記をご利用ください。2026年8月17日時点の CLine46 最新
+        CLine46 をお使いの方は下記をご利用ください。2026年8月18日時点の CLine46 最新
         ファームウェアに、ジェスチャー機能を追加したものです。
       </p>
       <Downloads lang="ja" />
@@ -103,6 +103,7 @@ function Ja() {
         <li>ジェスチャー判定の調整による誤爆の低減</li>
         <li>スクロール量と軸スナップを DYA Studio から調整可能に</li>
         <li>Runtime Macro をキーに割り当て可能に</li>
+        <li>設定ツール接続中の Bluetooth 応答を改善（3110 さんの知見）</li>
       </ul>
       <p>
         判定を詰めた結果、誤爆が少なく狙ったとおりに発動するようになりました。
@@ -186,7 +187,7 @@ function En() {
       <p>
         This page can only configure a keyboard running firmware that includes the
         gesture feature. For CLine46, use the build below: the latest CLine46
-        firmware as of 17 August 2026, with gesture support added.
+        firmware as of 18 August 2026, with gesture support added.
       </p>
       <Downloads lang="en" />
       <p className="muted small">
@@ -233,6 +234,7 @@ function En() {
         <li>Tuned gesture recognition, so misfires are rare</li>
         <li>Scroll speed and axis snap adjustable from DYA Studio</li>
         <li>Runtime Macros assignable to keys</li>
+        <li>Faster Bluetooth responses while a settings tool is connected (via 3110's fork)</li>
       </ul>
 
       <h3>What you get</h3>
