@@ -32,7 +32,15 @@ export function GestureActions() {
   const { behaviors, loading: behaviorsLoading } = useBehaviors(
     zmk?.state.connection ?? null,
   );
-  const layers = useLayers(zmk?.state.connection ?? null);
+  // The keymap is kilobytes and every RPC shares one serialized pipe, so
+  // fetching it alongside the gesture data was inflating the actions phase
+  // from ~300ms to ~5s. It only feeds the layer-name labels, which the page
+  // works fine without - so it waits until the gesture data is on screen.
+  const [coreLoaded, setCoreLoaded] = useState(false);
+  const layers = useLayers(coreLoaded ? (zmk?.state.connection ?? null) : null);
+  useEffect(() => {
+    if (!ready) setCoreLoaded(false);
+  }, [ready]);
   const { lang } = useLang();
   const keyPressId =
     behaviors.find((b) => isKeyPress(b.displayName))?.id ?? null;
@@ -146,6 +154,7 @@ export function GestureActions() {
       }
       setDefaults(collectedDefaults);
       mark("defaults (all gesture data done)");
+      setCoreLoaded(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {

@@ -169,7 +169,9 @@ export function useLayers(connection: RpcConnection | null): LayerInfo[] {
     let cancelled = false;
     void (async () => {
       try {
+        const t0 = performance.now();
         const res = await call_rpc(connection, { keymap: { getKeymap: true } });
+        console.info(`[timing] keymap (layer names): ${Math.round(performance.now() - t0)}ms`);
         const got = res.keymap?.getKeymap?.layers ?? [];
         if (!cancelled) {
           setLayers(got.map((l, index) => ({ index, name: l.name ?? "" })));
