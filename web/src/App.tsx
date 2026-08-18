@@ -70,6 +70,7 @@ function Page() {
               </a>{" "}
               · ZMK
             </p>
+            <p className="muted small devStatus">{t("devStatus")}</p>
           </div>
           <div className="headToggles">
             <LangToggle />

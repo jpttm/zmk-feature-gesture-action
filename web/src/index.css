@@ -798,3 +798,7 @@ input[type="checkbox"] {
   color: var(--muted);
   font-size: 0.85em;
 }
+
+.devStatus {
+  margin: 0.35rem 0 0;
+}
