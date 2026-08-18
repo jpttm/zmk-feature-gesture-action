@@ -27,7 +27,10 @@ jobs:
       # No lockfile: the two ZMK Studio dependencies are git refs that build
       # themselves on install, so `npm ci` has nothing to restore from.
       - run: npm install
+      # Served from the custom domain root, not a /repo-name/ project path.
       - run: npm run build
+        env:
+          VITE_BASE: /
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web/dist

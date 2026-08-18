@@ -5,7 +5,7 @@
 Gestures on a ZMK keyboard whose actions you can change from a web page, without
 rebuilding firmware.
 
-Settings page: <https://jpttm.github.io/zmk-feature-gesture-action/>
+Settings page: <https://korokoro.ttm.jp/>
 
 ## What it does
 

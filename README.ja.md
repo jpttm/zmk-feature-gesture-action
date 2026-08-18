@@ -5,7 +5,7 @@
 ZMK キーボードのジェスチャーに割り当てる動作を、ファームウェアを作り直さずに
 ブラウザから変更できるようにするモジュールです。
 
-設定ページ: <https://jpttm.github.io/zmk-feature-gesture-action/>
+設定ページ: <https://korokoro.ttm.jp/>
 
 ## 何ができるか
 

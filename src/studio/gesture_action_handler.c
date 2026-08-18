@@ -25,7 +25,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
  * Studio client knows where to load the page for this subsystem. The localhost
  * entry is for `npm run dev` against a real keyboard. */
 static struct zmk_rpc_custom_subsystem_meta gesture_action_meta = {
-    ZMK_RPC_CUSTOM_SUBSYSTEM_UI_URLS("https://jpttm.github.io/zmk-feature-gesture-action/",
+    ZMK_RPC_CUSTOM_SUBSYSTEM_UI_URLS("https://korokoro.ttm.jp/",
                                      "http://localhost:5173"),
     /* Reading is harmless, but reassigning a gesture can type anything, so the
      * whole subsystem sits behind an unlocked Studio session. */
