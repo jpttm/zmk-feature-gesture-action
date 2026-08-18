@@ -106,19 +106,27 @@ function Ja() {
         構いません。こちらは待ちがありません。
       </p>
 
-      <h3>このファームウェアの変更点</h3>
+      <h3>CLine46 用ファームウェアに入っているもの</h3>
+      <p>
+        上のファームウェアは「書き込むだけで便利機能が揃う」ことを目指した
+        CLine46 用の詰め合わせです。中身は2種類に分かれます。
+      </p>
+      <h4>ジェスチャー機能 — このページで設定するもの</h4>
       <ul>
-        <li>ジェスチャー機能の組み込み</li>
+        <li>トラックボールジェスチャーの組み込み（判定を実機で調整済みで、誤爆は稀です）</li>
         <li>レイヤー数を11個（0〜10）に拡張し、7〜10 を GESTURE1〜4 と命名</li>
-        <li>ジェスチャー判定の調整による誤爆の低減</li>
+      </ul>
+      <h4>その他の同梱機能 — ジェスチャーとは独立した CLine46 向けの改善</h4>
+      <ul>
         <li>スクロール量と軸スナップを DYA Studio から調整可能に</li>
         <li>Runtime Macro をキーに割り当て可能に</li>
         <li>設定ツール接続中の Bluetooth 応答を改善（3110 さんの知見）</li>
         <li>JIS/US 配列の実行時切り替え（kot149 さんの zmk-layout-shift。Toggle Layout Shift をキーやジェスチャーに割り当てて使用）</li>
       </ul>
-      <p>
-        判定を詰めた結果、誤爆が少なく狙ったとおりに発動するようになりました。
-        実用に耐える精度になっているかと思います。
+      <p className="muted small">
+        他のキーボードでこのページを使う場合に必要なのは、ジェスチャー機能
+        （gesture-action モジュール）だけです。「その他の同梱機能」はこのツールの
+        動作条件ではありません。
       </p>
 
       <h3>できること</h3>
@@ -244,16 +252,27 @@ function En() {
         delay.
       </p>
 
-      <h3>What this firmware changes</h3>
+      <h3>What the CLine46 build includes</h3>
+      <p>
+        The build above is a CLine46 bundle, aiming for "flash it and the good
+        stuff is just there". Its contents fall in two groups.
+      </p>
+      <h4>The gesture feature — what this page configures</h4>
       <ul>
-        <li>Gesture support</li>
+        <li>Trackball gestures, with recognition tuned on hardware so misfires are rare</li>
         <li>Layer count raised to 11 (0–10), with 7–10 named GESTURE1–4</li>
-        <li>Tuned gesture recognition, so misfires are rare</li>
+      </ul>
+      <h4>Also bundled — CLine46 improvements independent of gestures</h4>
+      <ul>
         <li>Scroll speed and axis snap adjustable from DYA Studio</li>
         <li>Runtime Macros assignable to keys</li>
         <li>Faster Bluetooth responses while a settings tool is connected (via 3110's fork)</li>
         <li>Runtime JIS/US layout switching (kot149's zmk-layout-shift; assign Toggle Layout Shift to a key or gesture)</li>
       </ul>
+      <p className="muted small">
+        On another keyboard, all this page needs is the gesture feature (the
+        gesture-action module). The "also bundled" list is not a requirement.
+      </p>
 
       <h3>What you get</h3>
       <p>
