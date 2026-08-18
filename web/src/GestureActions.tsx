@@ -413,7 +413,7 @@ export function GestureActions() {
         <ul className="muted small">
           <li>{t("appliesToHint")}</li>
           <li>{t("layerTakenHint")}</li>
-          <li>{t("layerScrollNote")}</li>
+          <li>{t("layerReservedHint")}</li>
         </ul>
       </div>
     </section>

@@ -209,9 +209,9 @@ export const STRINGS = {
   themeLight: { ja: "ライト", en: "Light" },
   themeDark: { ja: "ダーク", en: "Dark" },
   zmkDocs: { ja: "ZMK のビヘイビア一覧", en: "ZMK behaviour reference" },
-  layerScrollNote: {
-    ja: "レイヤー3 はスクロール専用のため選べません。",
-    en: "Layer 3 is reserved for scrolling and cannot be picked.",
+  layerReservedHint: {
+    ja: "ここに出てこないレイヤーは、キーボード側が通常操作用に予約しているものです。",
+    en: "Layers not listed here are ones the keyboard reserves for ordinary use.",
   },
   source: { ja: "ソース", en: "Source" },
   builtOn: { ja: "使用ライブラリ:", en: "built on" },
