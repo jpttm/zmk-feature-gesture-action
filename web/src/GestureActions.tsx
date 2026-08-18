@@ -49,9 +49,17 @@ export function GestureActions() {
   // Which layers this board keeps for itself; see selectableLayers.
   const [reservedLayers, setReservedLayers] = useState<number | undefined>();
   const [defaults, setDefaults] = useState<Action[]>([]);
-  const [os, setOs] = useState<Os>(
-    () => (localStorage.getItem("zmk-gesture-action.os") as Os) || "win",
-  );
+  const [os, setOs] = useState<Os>(() => {
+    const stored = localStorage.getItem("zmk-gesture-action.os") as Os | null;
+    if (stored === "win" || stored === "mac") {
+      return stored;
+    }
+    // Guessing from the browser beats defaulting everyone to Windows: a Mac
+    // user who does not notice the toggle would otherwise be shown Ctrl
+    // shortcuts throughout. It is only the starting position - the toggle
+    // still decides, and their choice is what gets remembered.
+    return /Mac|iPhone|iPad/.test(navigator.userAgent) ? "mac" : "win";
+  });
   const [appliedPreset, setAppliedPreset] = useState<string | null>(() =>
     localStorage.getItem("zmk-gesture-action.preset"),
   );
