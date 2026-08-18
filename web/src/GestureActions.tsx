@@ -67,6 +67,9 @@ export function GestureActions() {
   const refresh = useCallback(async () => {
     setBusy(true);
     setError(null);
+    const t0 = performance.now();
+    const mark = (label: string) =>
+      console.info(`[timing] ${label}: ${Math.round(performance.now() - t0)}ms`);
     try {
       // Paged: the firmware answers eight slots at a time so the response fits
       // the RPC buffer. Keep asking until we have covered every slot.
@@ -89,6 +92,7 @@ export function GestureActions() {
 
       setTotal(totalSlots);
       setActions(collected);
+      mark("actions");
 
       // Failing here is not fatal - the table falls back to slot numbers. It
       // does need saying out loud though, because silently showing numbers
@@ -118,6 +122,7 @@ export function GestureActions() {
 
       setNames(collectedNames);
       setNamesError(nameFailure);
+      mark("slot names");
 
       // Groups are optional: firmware without the layer-groups RPC still works,
       // it just cannot move a set between layers.
@@ -126,6 +131,7 @@ export function GestureActions() {
       setReservedLayers(
         groupRes?.kind === "getGroups" ? groupRes.reservedLayers : undefined,
       );
+      mark("groups");
 
       // Defaults are static; fetching them is what lets an untouched slot show
       // the action it will actually perform instead of the word "default".
@@ -139,6 +145,7 @@ export function GestureActions() {
         startSlot = collectedDefaults.length;
       }
       setDefaults(collectedDefaults);
+      mark("defaults (all gesture data done)");
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {

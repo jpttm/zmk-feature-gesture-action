@@ -67,6 +67,9 @@ export function useBehaviors(connection: RpcConnection | null) {
     setError(null);
     setBehaviors([]);
 
+    const t0 = performance.now();
+    let cacheHits = 0;
+    let fetchedCount = 0;
     try {
       const listed = await call_rpc(conn, { behaviors: { listAllBehaviors: true } });
       const ids = listed.behaviors?.listAllBehaviors?.behaviors ?? [];
@@ -79,7 +82,10 @@ export function useBehaviors(connection: RpcConnection | null) {
       // connection has a usable picker immediately.
       for (const id of ids) {
         const hit = cache[String(id)];
-        if (hit) collected.push(hit);
+        if (hit) {
+          collected.push(hit);
+          cacheHits++;
+        }
       }
       if (collected.length > 0) {
         setBehaviors([...collected].sort((a, b) => a.displayName.localeCompare(b.displayName)));
@@ -102,6 +108,7 @@ export function useBehaviors(connection: RpcConnection | null) {
         };
         cache[String(id)] = info;
         fetched = true;
+        fetchedCount++;
         collected.push(info);
         setBehaviors([...collected].sort((a, b) => a.displayName.localeCompare(b.displayName)));
       }
@@ -109,6 +116,12 @@ export function useBehaviors(connection: RpcConnection | null) {
       if (fetched) {
         writeCache(cache);
       }
+      // Phase timing, so slow reconnects can be diagnosed from numbers
+      // instead of impressions. Read it in the browser console.
+      console.info(
+        `[timing] behaviors: ${Math.round(performance.now() - t0)}ms ` +
+          `(${cacheHits} cached, ${fetchedCount} fetched)`,
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
