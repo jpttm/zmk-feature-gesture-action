@@ -20,14 +20,43 @@ export interface BehaviorInfo {
   param2: ParamDescription[];
 }
 
+/* Details are cached across sessions. A behaviour id is a CRC16 of its name,
+ * so it means the same thing on any firmware and any keyboard - the mapping
+ * cannot go stale the way a version-keyed cache would. */
+const CACHE_KEY = "zmk-gesture-action.behaviors.v1";
+
+function readCache(): Record<string, BehaviorInfo> {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    return raw ? (JSON.parse(raw) as Record<string, BehaviorInfo>) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeCache(cache: Record<string, BehaviorInfo>) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+  } catch {
+    // A full or disabled localStorage costs a slow reconnect, nothing more.
+  }
+}
+
 /**
  * The device's own behaviour list, so the picker offers exactly what this
  * firmware can actually invoke rather than a table baked into the page.
  *
- * Details are fetched one behaviour per round trip, which is what the official
- * protocol offers. Over BLE that is slow enough to be worth showing progress
- * for, so the list is exposed as it fills rather than all at once at the end.
+ * The protocol offers one behaviour per round trip, and a BLE round trip is
+ * around 95ms measured, so a first connection spends several seconds here.
+ * Only the id list is fetched every time; details already seen come from
+ * localStorage, which makes every connection after the first effectively
+ * instant.
  */
+type BehaviorDetails = { metadata?: { param1?: unknown[]; param2?: unknown[] }[] };
+
+const set1 = (d: BehaviorDetails) => d.metadata?.[0]?.param1;
+const set2 = (d: BehaviorDetails) => d.metadata?.[0]?.param2;
+
 export function useBehaviors(connection: RpcConnection | null) {
   const [behaviors, setBehaviors] = useState<BehaviorInfo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -42,22 +71,43 @@ export function useBehaviors(connection: RpcConnection | null) {
       const listed = await call_rpc(conn, { behaviors: { listAllBehaviors: true } });
       const ids = listed.behaviors?.listAllBehaviors?.behaviors ?? [];
 
+      const cache = readCache();
       const collected: BehaviorInfo[] = [];
+      let fetched = false;
+
+      // Show everything already known before going near the radio, so a repeat
+      // connection has a usable picker immediately.
       for (const id of ids) {
+        const hit = cache[String(id)];
+        if (hit) collected.push(hit);
+      }
+      if (collected.length > 0) {
+        setBehaviors([...collected].sort((a, b) => a.displayName.localeCompare(b.displayName)));
+      }
+
+      for (const id of ids) {
+        if (cache[String(id)]) continue;
+
         const details = await call_rpc(conn, {
           behaviors: { getBehaviorDetails: { behaviorId: id } },
         });
         const d = details.behaviors?.getBehaviorDetails;
         if (!d) continue;
 
-        const set = d.metadata?.[0];
-        collected.push({
+        const info: BehaviorInfo = {
           id: d.id,
           displayName: d.displayName || String(d.id),
-          param1: (set?.param1 ?? []) as ParamDescription[],
-          param2: (set?.param2 ?? []) as ParamDescription[],
-        });
+          param1: (set1(d) ?? []) as ParamDescription[],
+          param2: (set2(d) ?? []) as ParamDescription[],
+        };
+        cache[String(id)] = info;
+        fetched = true;
+        collected.push(info);
         setBehaviors([...collected].sort((a, b) => a.displayName.localeCompare(b.displayName)));
+      }
+
+      if (fetched) {
+        writeCache(cache);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
