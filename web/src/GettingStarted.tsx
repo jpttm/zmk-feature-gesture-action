@@ -4,6 +4,12 @@ import { useLang } from "./i18n";
  * The page is useless without matching firmware, and nothing on screen used to
  * say so. This is the panel that answers "I just found this link, now what?".
  *
+ * Ordered for the wider audience first: any DYA-compatible keyboard can
+ * integrate the module, and the CLine46 downloads are one clearly-bounded
+ * section a non-CLine46 reader can skip whole. CLine46 facts (layer numbers,
+ * bundle contents) stay inside that section so nothing outside it needs a
+ * "CLine46 では" disclaimer.
+ *
  * Written as two hand-authored language variants rather than a pile of i18n
  * keys: it is long-form prose with links and lists, and keeping each language
  * readable as a whole is worth more here than sharing the markup.
@@ -26,6 +32,8 @@ const FW_L_NI = import.meta.env.BASE_URL + `firmware/CLine46_L-${FW_NI_VERSION}.
 /* The beginner-facing setup guide: flashing, DYA Studio, what the bundle
  * holds. Japanese only, like nearly all of this keyboard's users. */
 const GUIDE_URL = import.meta.env.BASE_URL + "guide/";
+
+const REPO = "https://github.com/jpttm/zmk-feature-gesture-action";
 
 export function GettingStarted() {
   const { lang } = useLang();
@@ -65,10 +73,33 @@ function Ja() {
       <h3>対応ファームウェアが必要です</h3>
       <p>
         このページで設定できるのは、ジェスチャー機能（gesture-action モジュール）を
-        組み込んだファームウェアを書き込んだキーボードです。
+        組み込んだファームウェアを書き込んだキーボードです。お使いのキーボードに
+        合わせて、次のどちらかをご覧ください。
+      </p>
+
+      <h3>お使いのキーボードに組み込む — 自作・その他のキーボードの方</h3>
+      <p>
+        cormoran さんの <strong>DYA Studio が動くファームウェア構成</strong>
+        （カスタム RPC 対応の ZMK）で、トラックボールなどのポインティングデバイスが
+        あるキーボードなら、モジュールを組み込むだけでこのページがそのまま使えます。
+        グループ数・スロット名・レイヤーは<strong>キーボード側から読み取る</strong>ので、
+        ページの改造は要りません。
       </p>
       <p>
-        <strong>CLine46 をお使いの方</strong>は下記をご利用ください。2026年8月18日時点の
+        組み込み手順（west.yml への追加、overlay の書き方、メモリ消費の実測値）は{" "}
+        <a href={`${REPO}/blob/main/README.md`} target="_blank" rel="noreferrer">
+          モジュールの README（日本語）
+        </a>
+        にまとめてあります。モジュールは MIT ライセンスです。
+      </p>
+      <p className="muted small">
+        組み込んで動いた方は、ぜひ動作報告をください。CLine46 以外での実例を
+        お待ちしています。
+      </p>
+
+      <h3>CLine46 の方はこちら — 書き込むだけで使えます</h3>
+      <p>
+        ビルド不要の非公式ファームウェアを用意しています。2026年8月18日時点の
         CLine46 最新ファームウェアに、ジェスチャー機能などを追加したものです。
       </p>
       <Downloads lang="ja" />
@@ -83,17 +114,8 @@ function Ja() {
         <a href={FW_R_NI} download>右側</a> / <a href={FW_L_NI} download>左側</a>
         ）。それ以外の中身は同一です。
       </p>
-      <p className="muted small">
-        <strong>CLine46 以外のキーボードの方へ:</strong> ファームウェアに対応モジュールを
-        組み込めば、このページはそのまま使えます（表示されるグループやレイヤーは
-        キーボード側から読み取ります）。組み込み方は{" "}
-        <a href="https://github.com/jpttm/zmk-feature-gesture-action/blob/main/README.md" target="_blank" rel="noreferrer">
-          モジュールの README
-        </a>
-        をご覧ください。
-      </p>
 
-      <h3>設定の手順</h3>
+      <h4>設定の手順（CLine46）</h4>
       <ol>
         <li>
           左右の両方にファームウェアを書き込みます（Reset スイッチのダブルクリックで
@@ -127,29 +149,23 @@ function Ja() {
         構いません。こちらは待ちがありません。
       </p>
 
-      <h3>CLine46 用ファームウェアに入っているもの</h3>
       <p>
-        上のファームウェアは「書き込むだけで便利機能が揃う」ことを目指した CLine46 用の
-        詰め合わせです。ジェスチャー機能のほか、慣性スクロール・JIS/US 配列切り替え・
-        スクロール調整・Runtime Macro などを同梱しています。
-        <a href={GUIDE_URL + "#modules"}>それぞれの説明と使い方はセットアップガイドへ</a>。
-      </p>
-      <p className="muted small">
-        他のキーボードでこのページを使う場合に必要なのは、ジェスチャー機能
-        （gesture-action モジュール）だけです。同梱の他機能は動作条件ではありません。
+        この CLine46 用ファームウェアには、慣性スクロール・JIS/US 配列切り替え・
+        スクロール調整などジェスチャー以外の機能も同梱しています。
+        <a href={`${GUIDE_URL}#modules`}>それぞれの説明と使い方はセットアップガイドへ</a>。
       </p>
 
-      <h3>できること</h3>
-      <p>
-        上記の CLine46 用ファームウェアでは、初期状態でレイヤー7〜10 に16個の
-        ジェスチャーを設定し、レイヤー4〜10 の中から<strong>最大6つのレイヤー・
-        合計24個</strong>まで拡張できます（グループ数・レイヤー範囲はファームウェア側の
-        設定で、他のキーボードでは異なります）。
-      </p>
-      <p>
-        ジェスチャーを設定したレイヤーでは、
-        <strong>トラックボールを動かしてもマウスカーソルは移動しません。</strong>
-        これがないと、ジェスチャーを描くたびにカーソルが飛んでしまうためです。
+      <h3>このページでできること</h3>
+      <ul>
+        <li>ジェスチャーごとの動作を、ブラウザから数秒で変更（USB / Bluetooth、再ビルド不要）</li>
+        <li>ジェスチャーのグループを、どのレイヤーで効かせるかチェックボックスで変更</li>
+        <li>OS に合わせたおすすめ初期設定の一括適用</li>
+      </ul>
+      <p className="muted small">
+        グループの数・スロットの名前・選べるレイヤーの範囲は、接続したキーボードの
+        ファームウェアが決めます。ジェスチャーを効かせたレイヤーでは、トラックボールを
+        動かしてもカーソルは移動しません（ジェスチャーを描くたびにカーソルが飛ばない
+        ようにするためです）。
       </p>
 
       <h3>よくある質問</h3>
@@ -181,17 +197,16 @@ function Ja() {
         DYA Studio で設定したキー配置・マクロ・トラックボールの設定はそのまま残ります。
       </p>
       <p className="muted small">
-        ただし <code>settings_reset.uf2</code> を書き込んだ場合は例外で、
-        こちらはキーボードの保存内容をすべて消去します。
+        ただし、設定の全消去用ファームウェア（settings reset）を書き込んだ場合は
+        例外で、キーボードの保存内容がすべて消えます。
       </p>
 
       <h4>すべてのレイヤーでジェスチャーを使いたい</h4>
       <p>
-        ジェスチャーを設定したレイヤーではマウスカーソルが動かなくなります。そのため
-        <strong>CLine46 では</strong>レイヤー0〜3（通常のカーソル操作とスクロール）を
-        予約し、レイヤー4〜10 のみに設定できるようにしています。どのレイヤーが
-        予約されるかはキーボードのファームウェアが決めるので、他のキーボードでは
-        異なります。
+        ジェスチャーを効かせたレイヤーではマウスカーソルが動かなくなるため、
+        通常操作用のレイヤーは選択肢から外れるようになっています。どのレイヤーが
+        予約されるかは<strong>キーボードのファームウェアが決めます</strong>
+        （上記の CLine46 用ファームウェアでは 0〜3 を予約し、4〜10 が選べます）。
       </p>
 
       <h4>流用・改変について</h4>
@@ -209,11 +224,33 @@ function En() {
       <h3>You need the matching firmware</h3>
       <p>
         This page configures keyboards whose firmware includes the gesture-action
-        module.
+        module. Pick whichever of the two sections below matches your keyboard.
+      </p>
+
+      <h3>Integrate it into your keyboard — any DYA-compatible build</h3>
+      <p>
+        On a keyboard running cormoran's <strong>DYA-Studio-compatible firmware
+        stack</strong> (the custom-RPC ZMK fork) with a trackball or other pointing
+        device, integrating the module is all it takes — this page then works as-is.
+        Groups, slot names and layers are <strong>read from the device</strong>, so
+        nothing here needs modifying.
       </p>
       <p>
-        <strong>On a CLine46</strong>, use the build below: the latest CLine46
-        firmware as of 18 August 2026, with gesture support and more added.
+        Integration steps (west.yml, the overlay, measured memory cost) are in{" "}
+        <a href={`${REPO}/blob/main/README.en.md`} target="_blank" rel="noreferrer">
+          the module README
+        </a>
+        . The module is MIT licensed.
+      </p>
+      <p className="muted small">
+        If you get it running, please report back — examples beyond the CLine46 are
+        exactly what this project wants to hear about.
+      </p>
+
+      <h3>On a CLine46 — flash and go</h3>
+      <p>
+        A no-build unofficial firmware is provided: the latest CLine46 firmware as of
+        18 August 2026, with gesture support and more added.
       </p>
       <Downloads lang="en" />
       <p className="muted small">
@@ -228,17 +265,8 @@ function En() {
         <a href={FW_R_NI} download>right</a> / <a href={FW_L_NI} download>left</a>
         ). Everything else is identical.
       </p>
-      <p className="muted small">
-        <strong>On any other keyboard:</strong> integrate the module into its
-        firmware and this page works as-is — groups and layers are read from the
-        device. See{" "}
-        <a href="https://github.com/jpttm/zmk-feature-gesture-action/blob/main/README.en.md" target="_blank" rel="noreferrer">
-          the module README
-        </a>
-        .
-      </p>
 
-      <h3>Setting it up</h3>
+      <h4>Setting it up (CLine46)</h4>
       <ol>
         <li>Flash both halves</li>
         <li>
@@ -269,39 +297,22 @@ function En() {
         delay.
       </p>
 
-      <h3>What the CLine46 build includes</h3>
       <p>
-        The build above is a CLine46 bundle, aiming for "flash it and the good
-        stuff is just there". Its contents fall in two groups.
-      </p>
-      <h4>The gesture feature — what this page configures</h4>
-      <ul>
-        <li>Trackball gestures, with recognition tuned on hardware so misfires are rare</li>
-        <li>Layer count raised to 11 (0–10), with 7–10 named GESTURE1–4</li>
-      </ul>
-      <h4>Also bundled — CLine46 improvements independent of gestures</h4>
-      <ul>
-        <li>Inertial scrolling - flick, release, and it coasts (mjmjm0101's zmk-input-processor-scroll-inertia; a no-inertia build is offered too)</li>
-        <li>Scroll speed and axis snap adjustable from DYA Studio</li>
-        <li>Runtime Macros assignable to keys</li>
-        <li>Faster Bluetooth responses while a settings tool is connected (via 3110's fork)</li>
-        <li>Runtime JIS/US layout switching (kot149's zmk-layout-shift; assign Toggle Layout Shift to a key or gesture)</li>
-      </ul>
-      <p className="muted small">
-        On another keyboard, all this page needs is the gesture feature (the
-        gesture-action module). The "also bundled" list is not a requirement.
+        The CLine46 bundle also carries features beyond gestures — inertial scrolling,
+        JIS/US layout switching, scroll tuning. The setup guide (Japanese) covers each.
       </p>
 
-      <h3>What you get</h3>
-      <p>
-        This build targets the CLine46. Out of the box it places 16 gestures on layers
-        7–10, and you can grow that to <strong>up to 6 layers and 24 gestures</strong>{" "}
-        chosen from layers 4–10.
-      </p>
-      <p>
-        On a layer with gestures,{" "}
-        <strong>rolling the trackball does not move the cursor.</strong> Without that,
-        the pointer would fly across the screen every time you drew a gesture.
+      <h3>What this page does</h3>
+      <ul>
+        <li>Change what each gesture does, from the browser, in seconds (USB / Bluetooth, no rebuild)</li>
+        <li>Move a gesture group between layers with checkboxes</li>
+        <li>Apply a recommended preset for your OS in one go</li>
+      </ul>
+      <p className="muted small">
+        Group count, slot names and the selectable layer range all come from the
+        connected keyboard's firmware. On a layer with gestures, rolling the trackball
+        does not move the cursor — otherwise the pointer would fly across the screen
+        every time you drew a gesture.
       </p>
 
       <h3>FAQ</h3>
@@ -332,16 +343,16 @@ function En() {
         and trackball settings untouched.
       </p>
       <p className="muted small">
-        The one exception is <code>settings_reset.uf2</code>, which erases everything
+        The one exception is a settings-reset firmware, which erases everything
         stored on the keyboard.
       </p>
 
       <h4>Can I put gestures on every layer?</h4>
       <p>
-        A layer with gestures loses cursor movement. <strong>On the CLine46</strong>{" "}
-        layers 0–3 stay reserved for normal pointing and scrolling, leaving 4–10 for
-        gestures. The reserved set comes from the keyboard's firmware, so it differs
-        on other keyboards.
+        A layer with gestures loses cursor movement, so layers meant for ordinary use
+        are kept out of the picker. <strong>Which layers are reserved is the
+        firmware's decision</strong> — the CLine46 bundle above reserves 0–3 and
+        offers 4–10.
       </p>
 
       <h4>Reuse and modification</h4>
