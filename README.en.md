@@ -170,10 +170,11 @@ groups lands at about 60% RAM.
 ### Things to know before adopting
 
 - Runtime layer assignment for gesture groups (`active-layers`) currently needs
-  [a fork of zmk-mouse-gesture](https://github.com/jpttm/zmk-mouse-gesture).
-  Without it, a group's layer is fixed at build time and everything else still
-  works. [Upstreaming is in
-  progress](https://github.com/kot149/zmk-mouse-gesture/pull/11).
+  [a fork of zmk-mouse-gesture](https://github.com/jpttm/zmk-mouse-gesture)
+  (branch `v1-active-layers`). Without it, a group's layer is fixed at build
+  time and everything else still works. Three of the four PRs in this series
+  are merged upstream; the last is
+  [proposed](https://github.com/kot149/zmk-mouse-gesture/pull/14).
 - The preset buttons on the settings page assume four gestures per group and
   sixteen slots. Everything else — slot names, group count, layers — comes from
   the device, so a different shape falls back to the per-slot editor rather than
