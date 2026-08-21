@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useLang } from "./i18n";
 
 /**
@@ -37,8 +38,27 @@ const REPO = "https://github.com/jpttm/zmk-feature-gesture-action";
 
 export function GettingStarted() {
   const { lang } = useLang();
+  /* The guide page links here as /#download: a search visitor reading the
+   * flashing steps needs the files, and they live inside this panel. The
+   * hash opens the panel and lands them on the download cards, instead of
+   * leaving them in front of a closed summary line. */
+  const [open, setOpen] = useState(
+    () => typeof window !== "undefined" && window.location.hash === "#download",
+  );
+  useEffect(() => {
+    if (window.location.hash === "#download") {
+      // Wait a frame so the freshly opened panel has laid out.
+      requestAnimationFrame(() =>
+        document.getElementById("download")?.scrollIntoView({ block: "start" }),
+      );
+    }
+  }, []);
   return (
-    <details className="guide">
+    <details
+      className="guide"
+      open={open}
+      onToggle={(e) => setOpen(e.currentTarget.open)}
+    >
       <summary>{lang === "ja" ? "初めての方へ" : "Start here"}</summary>
       <div className="guideBody">{lang === "ja" ? <Ja /> : <En />}</div>
     </details>
@@ -54,7 +74,7 @@ export function GettingStarted() {
  */
 function Downloads({ lang }: { lang: "ja" | "en" }) {
   return (
-    <div className="downloads">
+    <div className="downloads" id="download">
       <a className="dl primary" href={FW_R} download>
         <strong>{lang === "ja" ? "右側" : "Right half"}</strong>
         <span>{FW_R_NAME}</span>
