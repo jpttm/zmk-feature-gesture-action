@@ -62,6 +62,16 @@ devicetree に書かれるためビルド時に固定されます。変えるに
 
 ## キーボードへの組み込み方
 
+DYA Studio が既に動いているキーボードなら、やることは3つだけです。
+
+1. west.yml にモジュールを2つ追記する
+2. overlay に3行書く
+3. keymap にジェスチャー用のレイヤーと、そこへ入るキーを用意する
+
+`.conf` に書くものはありません（どちらのモジュールも組み込むだけで有効に
+なります）。書き込んだら <https://korokoro.ttm.jp/> に `studio_unlock` を
+押した状態で接続すれば、設定画面にジェスチャーが並びます。
+
 ### 1. モジュールを追加する
 
 必要なのは2つです。ジェスチャーを**認識する**モジュール（kot149 さんの
@@ -109,12 +119,10 @@ overlay に次を書きます。**これで組み込みは実質完了です。*
 
 - `&trackball_listener` はキーボードごとに名前が違います。お使いの shield の
   overlay で `zmk,input-listener` を持つノードを探してください
-- グループ1〜4の初期レイヤーは 7〜10 です。違うレイヤーにしたい場合は
-  include の**前**に `#define KOROKORO_GESTURE_LAYER_1 4` のように上書きします
 - 感度は 600 CPI のトラックボールで調整した値です。CPI が高いセンサーでは
-  ジェスチャー判定が敏感になりすぎるので、比例して増やしてください
-  (例: 1000 CPI なら `&zip_gesture_1 { stroke-size = <170>; };` を6グループ分)。
-  他の調整値も同じく通常の devicetree 記法で上書きできます
+  敏感になりすぎるので、include の**前**に1行で比例調整してください:
+  `#define KOROKORO_GESTURE_STROKE_SIZE 170`（1000 CPI の例。6グループ全部に
+  効きます）
 - スロット数の Kconfig（`CONFIG_ZMK_GESTURE_ACTION_COUNT`）は既定で 24 なので、
   書く必要はありません
 - リスナーの**ベースチェーン**につなぎます。レイヤー上書き（`layers = <N>`）に
@@ -130,16 +138,30 @@ reserved-layers）、ジェスチャープロセッサ6個を自分で並べま�
 
 </details>
 
-### 3. レイヤーに名前を付ける
+### 3. ジェスチャー用レイヤーを用意する
 
-任意ですが、設定画面に表示されるので「GESTURE1」のほうが「7」より分かりやすいです。
+各グループは「自分のレイヤーが有効なとき」だけ動きます。使い方は、レイヤーキーを
+押しながらトラックボールを転がす、です。つまり keymap に**ジェスチャー用の
+レイヤー**と、**そこへ入るキー**が必要です。
+
+グループ1〜4の初期レイヤーは 7〜10 ですが、**存在しないレイヤーを指している
+グループは発火しないだけで害はない**ので、レイヤー1枚から始められます。
+たとえば標準でレイヤーが5枚（0〜4）のキーボードなら:
 
 ```dts
-layer_7 {
-    display-name = "GESTURE1";
-    bindings = < ... >;
+// overlay または keymap で、include の前に:
+#define KOROKORO_GESTURE_LAYER_1 5
+
+// keymap にレイヤーを1枚追加（位置5になる）。キーは全部 &trans でよい:
+gesture_1 {
+    display-name = "GESTURE1";   // 設定画面にこの名前が出る
+    bindings = < &trans &trans ... >;
 };
 ```
+
+そして既存レイヤーのどこかに `&mo 5`（押している間だけ有効）を置きます。
+グループを増やしたくなったら、レイヤーを足して
+`KOROKORO_GESTURE_LAYER_2` 以降を同じように合わせるだけです。
 
 実際に動いている一式は
 [CLine46 の設定](https://github.com/jpttm/zmk_config_CLine46/blob/feat/gesture-action/boards/shields/CLine46/CLine46_R.overlay)

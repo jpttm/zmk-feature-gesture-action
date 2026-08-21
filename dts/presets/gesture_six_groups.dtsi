@@ -23,15 +23,23 @@
  *   - &gesture_action: 24 named slots. Groups 1-4 carry defaults (browser
  *     tabs / desktops / navigation / editing) so a fresh flash does something
  *     useful; groups 5-6 are blank, to be assigned from the settings page.
- *   - Groups 1-4 default to layers 7-10. Override before the include when a
+ *   - Groups 1-4 default to layers 7-10. A group whose layer does not exist
+ *     in the keymap simply never fires - harmless, so a keyboard can start
+ *     with one gesture layer and grow. Override before the include when a
  *     keyboard numbers its gesture layers differently:
  *
  *         #define KOROKORO_GESTURE_LAYER_1 4
  *         #include <presets/gesture_six_groups.dtsi>
  *
  *     Groups 5-6 park on BIT(31) - no layer - until assigned at runtime.
- *   - Every node is labeled, so any tuning value can still be overridden the
- *     normal devicetree way: &zip_gesture_1 { stroke-size = <150>; };
+ *   - The two CPI-sensitive tuning values override the same way, once for
+ *     all six groups (the defaults suit 600 CPI; scale proportionally):
+ *
+ *         #define KOROKORO_GESTURE_STROKE_SIZE 170        // 1000 CPI
+ *         #define KOROKORO_GESTURE_MOVEMENT_THRESHOLD 8
+ *
+ *   - Every node is labeled, so any value can still be overridden per-group
+ *     the normal devicetree way: &zip_gesture_1 { stroke-size = <150>; };
  *
  * Needs CONFIG_ZMK_GESTURE_ACTION_COUNT >= 24 (the Kconfig default).
  */
@@ -55,6 +63,14 @@
 #define KOROKORO_GESTURE_LAYER_4 10
 #endif
 
+/* Raw-count tuning, tied to sensor CPI (defaults tuned at 600). */
+#ifndef KOROKORO_GESTURE_STROKE_SIZE
+#define KOROKORO_GESTURE_STROKE_SIZE 100
+#endif
+#ifndef KOROKORO_GESTURE_MOVEMENT_THRESHOLD
+#define KOROKORO_GESTURE_MOVEMENT_THRESHOLD 5
+#endif
+
 /* Splice into an input listener's BASE chain (not a layer override - an
  * override would pin the group to one layer at build time and, worse, stop
  * the chain for every other group). */
@@ -75,8 +91,8 @@
         suppress-movement;                                                     \
         enable-eager-mode;                                                     \
         gesture-cooldown-ms = <200>;                                           \
-        stroke-size = <100>;                                                   \
-        movement-threshold = <5>;                                              \
+        stroke-size = <KOROKORO_GESTURE_STROKE_SIZE>;                          \
+        movement-threshold = <KOROKORO_GESTURE_MOVEMENT_THRESHOLD>;            \
                                                                                \
         up    { pattern = <GESTURE_UP>;    bindings = <&gesture_action s_up>;    }; \
         down  { pattern = <GESTURE_DOWN>;  bindings = <&gesture_action s_down>;  }; \

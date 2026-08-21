@@ -119,7 +119,12 @@ function Ja() {
 
 &gesture_action { reserved-layers = <0 1 2>; };`}</pre>
       <p>
-        コピーして使える west.yml、レイヤー番号や感度の変え方、メモリ消費の実測値は{" "}
+        このほかに必要なのは、ジェスチャー用のレイヤー（と、そこへ入るキー）を
+        keymap に用意することだけです。レイヤー番号や感度（CPI 比例）は、include
+        の前の <code>#define</code> 1行で合わせられます。
+      </p>
+      <p>
+        コピーして使える west.yml、レイヤーの足し方、感度の変え方、メモリ消費の実測値は{" "}
         <a href={`${REPO}/blob/main/README.md`} target="_blank" rel="noreferrer">
           モジュールの README（日本語）
         </a>
@@ -282,8 +287,13 @@ function En() {
 
 &gesture_action { reserved-layers = <0 1 2>; };`}</pre>
       <p>
-        A copy-paste west.yml, layer/sensitivity overrides and measured memory cost
-        are in{" "}
+        Beyond that you only need a gesture layer in the keymap (and a key that
+        reaches it). Layer numbers and sensitivity (CPI-proportional) adjust with
+        one <code>#define</code> before the include.
+      </p>
+      <p>
+        A copy-paste west.yml, adding layers, sensitivity overrides and measured
+        memory cost are in{" "}
         <a href={`${REPO}/blob/main/README.en.md`} target="_blank" rel="noreferrer">
           the module README
         </a>

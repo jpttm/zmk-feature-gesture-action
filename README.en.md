@@ -62,6 +62,17 @@ combo, a macro step, a key position — can point at one.
 
 ## Adding it to a keyboard
 
+If DYA Studio already runs on your keyboard, there are exactly three things
+to do:
+
+1. Add two modules to west.yml
+2. Write three lines in the overlay
+3. Give the keymap a gesture layer, and a key that reaches it
+
+Nothing goes in `.conf` — both modules enable themselves once included. Flash,
+then connect to <https://korokoro.ttm.jp/> with `studio_unlock` held, and the
+gestures appear in the settings page.
+
 ### 1. Add the modules
 
 You need two: the module that **recognizes** gestures (kot149's
@@ -110,12 +121,10 @@ settings page afterwards.
 
 - `&trackball_listener` is keyboard-specific — look for the node with
   `zmk,input-listener` in your shield's overlay
-- Groups 1-4 default to layers 7-10; override before the include with
-  `#define KOROKORO_GESTURE_LAYER_1 4` if your keyboard numbers differently
 - The tuning was done on a 600 CPI trackball. A higher-CPI sensor makes
-  recognition oversensitive, so scale stroke-size proportionally
-  (e.g. 1000 CPI: `&zip_gesture_1 { stroke-size = <170>; };` for all six).
-  Everything else overrides the normal devicetree way too
+  recognition oversensitive, so scale it proportionally with one line before
+  the include: `#define KOROKORO_GESTURE_STROKE_SIZE 170` (the 1000 CPI
+  value; applies to all six groups)
 - `CONFIG_ZMK_GESTURE_ACTION_COUNT` defaults to 24 now, so no conf line needed
 - Splice into the listener's **base** chain, not a layer override - see the
   design notes for why
@@ -130,16 +139,29 @@ is the worked example.
 
 </details>
 
-### 3. Name your layers
+### 3. Give the keymap a gesture layer
 
-Optional, but the settings page shows them, and "GESTURE1" beats "7".
+A group only runs while its layer is active; the gesture *is* "hold a layer
+key, roll the trackball". So the keymap needs a **gesture layer** and a **key
+that reaches it**.
+
+Groups 1-4 default to layers 7-10, but **a group pointed at a layer that does
+not exist simply never fires — harmlessly** — so you can start with a single
+layer. On a keyboard whose stock keymap has five layers (0-4), say:
 
 ```dts
-layer_7 {
-    display-name = "GESTURE1";
-    bindings = < ... >;
+// in the overlay or keymap, before the include:
+#define KOROKORO_GESTURE_LAYER_1 5
+
+// add one layer to the keymap (it becomes position 5); all-&trans is fine:
+gesture_1 {
+    display-name = "GESTURE1";   // what the settings page shows
+    bindings = < &trans &trans ... >;
 };
 ```
+
+Then put `&mo 5` (active while held) somewhere on an existing layer. Want more
+groups later? Add a layer and set `KOROKORO_GESTURE_LAYER_2` the same way.
 
 A working example of all of this is in the
 [CLine46 config](https://github.com/jpttm/zmk_config_CLine46/blob/feat/gesture-action/boards/shields/CLine46/CLine46_R.overlay).
