@@ -106,7 +106,20 @@ function Ja() {
         ページの改造は要りません。
       </p>
       <p>
-        組み込み手順（west.yml への追加、overlay の書き方、メモリ消費の実測値）は{" "}
+        組み込みは<strong>プリセット同梱で、overlay に書くのは実質3行</strong>です
+        — プリセットの include、リスナーへの接続、予約レイヤーの指定だけ。
+        6グループ分の認識設定・24スロット・初期割り当てまで全部入りで、
+        書き込んだ直後から動きます。
+      </p>
+      <pre className="code-sample">{`#include <presets/gesture_six_groups.dtsi>
+
+&トラックボールのリスナー {
+    input-processors = <既存のプロセッサ...>, <KOROKORO_GESTURES>;
+};
+
+&gesture_action { reserved-layers = <0 1 2>; };`}</pre>
+      <p>
+        コピーして使える west.yml、レイヤー番号や感度の変え方、メモリ消費の実測値は{" "}
         <a href={`${REPO}/blob/main/README.md`} target="_blank" rel="noreferrer">
           モジュールの README（日本語）
         </a>
@@ -256,7 +269,21 @@ function En() {
         nothing here needs modifying.
       </p>
       <p>
-        Integration steps (west.yml, the overlay, measured memory cost) are in{" "}
+        Integration ships as a preset — <strong>the overlay needs essentially three
+        lines</strong>: include the preset, splice it into your listener, name your
+        reserved layers. Six gesture groups, 24 slots and default assignments are
+        all included, working right after flashing.
+      </p>
+      <pre className="code-sample">{`#include <presets/gesture_six_groups.dtsi>
+
+&your_pointer_listener {
+    input-processors = <...existing...>, <KOROKORO_GESTURES>;
+};
+
+&gesture_action { reserved-layers = <0 1 2>; };`}</pre>
+      <p>
+        A copy-paste west.yml, layer/sensitivity overrides and measured memory cost
+        are in{" "}
         <a href={`${REPO}/blob/main/README.en.md`} target="_blank" rel="noreferrer">
           the module README
         </a>

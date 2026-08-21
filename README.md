@@ -69,6 +69,10 @@ devicetree に書かれるためビルド時に固定されます。変えるに
 
 ### 1. モジュールを追加する
 
+必要なのは2つです。ジェスチャーを**認識する**モジュール（kot149 さんの
+zmk-mouse-gesture）と、認識されたジェスチャーの**動作を保存・差し替えする**
+このモジュール。west.yml の `remotes:` と `projects:` にそれぞれ追記します。
+
 ```yaml
 # config/west.yml
 manifest:
@@ -76,6 +80,12 @@ manifest:
     - name: jpttm
       url-base: https://github.com/jpttm
   projects:
+    # ジェスチャー認識 (kot149 さんの zmk-mouse-gesture。レイヤーの実行時
+    # 変更 (active-layers) が本家に入るまでは、それを足したフォークを指す)
+    - name: zmk-mouse-gesture
+      remote: jpttm
+      revision: v1-active-layers
+    # 認識されたジェスチャーの動作スロット (このモジュール)
     - name: zmk-feature-gesture-action
       remote: jpttm
       revision: main
@@ -102,10 +112,14 @@ overlay に次を書きます。**これで組み込みは実質完了です。*
 グループ1〜4の初期動作（ブラウザのタブ / 仮想デスクトップ / ページ内移動 /
 編集）まで入っています。書き込んだ直後から動き、変更は設定ページから行えます。
 
+- `&trackball_listener` はキーボードごとに名前が違います。お使いの shield の
+  overlay で `zmk,input-listener` を持つノードを探してください
 - グループ1〜4の初期レイヤーは 7〜10 です。違うレイヤーにしたい場合は
   include の**前**に `#define KOROKORO_GESTURE_LAYER_1 4` のように上書きします
-- 感度などの調整値も通常の devicetree 記法で上書きできます:
-  `&zip_gesture_1 { stroke-size = <150>; };`
+- 感度は 600 CPI のトラックボールで調整した値です。CPI が高いセンサーでは
+  ジェスチャー判定が敏感になりすぎるので、比例して増やしてください
+  (例: 1000 CPI なら `&zip_gesture_1 { stroke-size = <170>; };` を6グループ分)。
+  他の調整値も同じく通常の devicetree 記法で上書きできます
 - スロット数の Kconfig（`CONFIG_ZMK_GESTURE_ACTION_COUNT`）は既定で 24 なので、
   書く必要はありません
 - リスナーの**ベースチェーン**につなぎます。レイヤー上書き（`layers = <N>`）に

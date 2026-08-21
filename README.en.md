@@ -67,7 +67,11 @@ for.
 
 ## Adding it to a keyboard
 
-### 1. Add the module
+### 1. Add the modules
+
+You need two: the module that **recognizes** gestures (kot149's
+zmk-mouse-gesture) and this one, which **stores and hot-swaps** what each
+recognized gesture does. Add both to `remotes:` and `projects:` in west.yml.
 
 ```yaml
 # config/west.yml
@@ -76,6 +80,12 @@ manifest:
     - name: jpttm
       url-base: https://github.com/jpttm
   projects:
+    # Gesture recognition (kot149's zmk-mouse-gesture; points at a fork that
+    # adds runtime layer switching (active-layers) until it lands upstream)
+    - name: zmk-mouse-gesture
+      remote: jpttm
+      revision: v1-active-layers
+    # Action slots for recognized gestures (this module)
     - name: zmk-feature-gesture-action
       remote: jpttm
       revision: main
@@ -103,10 +113,14 @@ groups 1-4 (browser tabs / virtual desktops / navigation / editing), so a
 fresh flash already does something useful. Everything is editable from the
 settings page afterwards.
 
+- `&trackball_listener` is keyboard-specific — look for the node with
+  `zmk,input-listener` in your shield's overlay
 - Groups 1-4 default to layers 7-10; override before the include with
   `#define KOROKORO_GESTURE_LAYER_1 4` if your keyboard numbers differently
-- Tuning stays overridable the normal devicetree way:
-  `&zip_gesture_1 { stroke-size = <150>; };`
+- The tuning was done on a 600 CPI trackball. A higher-CPI sensor makes
+  recognition oversensitive, so scale stroke-size proportionally
+  (e.g. 1000 CPI: `&zip_gesture_1 { stroke-size = <170>; };` for all six).
+  Everything else overrides the normal devicetree way too
 - `CONFIG_ZMK_GESTURE_ACTION_COUNT` defaults to 24 now, so no conf line needed
 - Splice into the listener's **base** chain, not a layer override - see the
   design notes for why
