@@ -24,13 +24,10 @@ Open the page, connect over USB or Bluetooth, pick a different key, done.
 `zmk-mouse-gesture` invokes ordinary ZMK behaviours, and those are written into
 the devicetree at build time. Changing one means rebuilding.
 
-The obvious workaround is to point each gesture at a
-[runtime macro](https://github.com/cormoran/zmk-feature-runtime-macro), which
-*is* editable at runtime. It works, but there are only 16 macro slots, and a
-keyboard with 16 gestures has none left for actual macros. Gestures and macros
-end up fighting over the same scarce resource.
-
-This module gives gestures storage of their own.
+Pointing each gesture at a
+[runtime macro](https://github.com/cormoran/zmk-feature-runtime-macro) works
+around this, but eats the 16 macro slots. This module gives gestures storage
+of their own.
 
 ## How it works
 
@@ -49,10 +46,8 @@ a slot and the stored value takes over. Reset it and the default comes back.
 The web page reads and writes those slots over ZMK Studio's RPC transport, which
 works over both USB (Web Serial) and Bluetooth (Web Bluetooth).
 
-**None of this is specific to gestures.** A slot is just a redirectable
-behaviour. Anything that takes a binding — a combo, a macro step, a key
-position — can point at one. Gesture recognition is simply what it was built
-for.
+A slot is just a redirectable behaviour, so anything that takes a binding — a
+combo, a macro step, a key position — can point at one.
 
 ## What you need
 
@@ -170,67 +165,37 @@ groups lands at about 60% RAM.
 
 ## Design notes
 
-These cost time to work out. None of them are visible from the devicetree.
+Only the things that bite if you don't know them.
 
-### Put gesture processors in the base chain, not a layer override
+### Put gesture processors in the base chain
 
-An input listener evaluates its layer overrides first, and **returns there**
-unless the override sets `process-next`. Two consequences follow:
+An input listener evaluates its layer overrides (`layers = <N>`) first and
+stops there. Two consequences:
 
-- A gesture processor placed *inside* an override only ever runs on that layer,
-  and the mapping is fixed at build time. Putting it in the base chain and
-  letting `active-layers` decide is what makes the layer runtime-settable.
-- A gesture processor in the base chain never sees events on a layer some
-  *other* override has claimed. Assign a gesture group to a layer that has a
-  scroll override and it will silently never fire. No error, no hint, nothing in
-  the log.
+- A gesture processor *inside* an override is pinned to that layer, and
+  runtime layer switching stops working. Base chain + `active-layers` is the
+  correct placement
+- On a layer claimed by some *other* override (scroll, say), base-chain
+  gestures **silently never fire — no error, nothing in the log.** The module
+  detects such layers automatically and removes them from the settings page
 
-The second is why `reserved-layers` alone is not enough.
+### `reserved-layers` is policy only
 
-### Which layers get offered
+Hand-write only the layers you want kept for ordinary use. Layers that
+physically cannot work (override-claimed) are derived automatically, so moving
+your scroll layer needs no edit here.
 
-The settings page needs three things, from three places:
+### Other traps
 
-| What | Where it comes from |
-|---|---|
-| Which layers exist, and their names | the standard ZMK keymap RPC |
-| Which layers are reserved by policy | `reserved-layers` on this node |
-| Which layers *cannot* work | derived — every `zmk,input-listener` in the tree is walked, and any layer claimed by an override without `process-next` is reserved too |
-
-Only the middle row is hand-written, because only it is a judgement call. Move
-your scroll layer and nothing needs editing.
-
-An earlier attempt had this node name its listeners with a phandle. That does
-not work: the listener references the gesture processors, whose bindings
-reference this node, and devicetree rejects the cycle at configure time.
-Walking by compatible sidesteps the loop and needs no configuration at all.
-
-### Layer masks index by position, not by ID
-
-`active-layers` and `reserved-layers` are bitmasks over a layer's **position**
-in the keymap, which is what `zmk_keymap_layer_active()` takes. ZMK Studio's
-`Layer.id` is a stable identifier that survives reordering and is *not* the same
-number. A client reading the keymap must use the array position, or a mask will
-point at the wrong layer as soon as anyone reorders anything.
-
-### `active-layers = 0` means every layer
-
-A gesture group you want switched off cannot simply be zeroed — zero is the
-"no filter" value. Park it on a layer that does not exist, `BIT(31)`, instead.
-
-### One group per layer
-
-Two groups sharing a layer both fire, and which action wins is not something a
-user should have to reason about. The settings page enforces one owner per
-layer by disabling a layer another group already holds.
-
-### Freezing the cursor
-
-Without `suppress-movement`, drawing a gesture also flings the pointer across
-the screen. The upstream implementation returns `ZMK_INPUT_PROC_STOP` to
-suppress it, which ZMK's input listener discards on the layer-override path — so
-the option silently does nothing there. The fork zeroes the event value instead,
-which works from anywhere in the chain.
+- The `active-layers` / `reserved-layers` masks index a layer's **position**
+  in the keymap — not ZMK Studio's `Layer.id`
+- `active-layers = 0` means "every layer". Park a disabled group on a layer
+  that does not exist, `BIT(31)` (the preset's groups 5–6 sit there)
+- One group per layer; two groups sharing one both fire (the settings page
+  refuses the assignment to begin with)
+- `suppress-movement` pins the cursor during a gesture. The upstream
+  implementation is ineffective on the layer-override path, so the fork uses a
+  different mechanism
 
 ## Working on the settings page
 
