@@ -271,7 +271,5 @@ Very little of what makes this work is mine.
 MIT, so that it stays easy for other projects to adopt. Please do — I would be
 glad to see this in other configuration tools or firmware distributions.
 
-This project deliberately takes nothing from
-[DYA Studio](https://github.com/cormoran/dya-studio), which is AGPL-3.0. Reading
-it to understand the RPC protocol is one thing; copying from it would have forced
-this module to AGPL too.
+It contains no code from
+[DYA Studio](https://github.com/cormoran/dya-studio) (AGPL-3.0).

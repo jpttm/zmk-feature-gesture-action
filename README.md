@@ -271,6 +271,5 @@ npm run dev
 MIT です。他のプロジェクトが取り込みやすいようにするためなので、**どうぞ自由に
 お使いください。** 別の設定ツールや配布ファームウェアで活用いただけると嬉しいです。
 
-このプロジェクトは [DYA Studio](https://github.com/cormoran/dya-studio)
-（AGPL-3.0）からコードを一切取っていません。RPC の仕組みを理解するために読むのと、
-コードを写すのは別の話で、写していればこのモジュールも AGPL になっていました。
+[DYA Studio](https://github.com/cormoran/dya-studio)（AGPL-3.0）のコードは
+含んでいません。
