@@ -1,0 +1,130 @@
+/*
+ * Copyright (c) 2026 jpttm
+ *
+ * SPDX-License-Identifier: MIT
+ *
+ * Six gesture groups, ready-made.
+ *
+ * Integrating gestures used to mean transcribing ~150 lines: six processor
+ * instances, 24 slot names, default bindings, and slot indices that silently
+ * misfire when one number is off. This file is that transcription, done once.
+ * A keyboard includes it and writes three lines:
+ *
+ *     #include <presets/gesture_six_groups.dtsi>
+ *
+ *     &my_listener {
+ *         input-processors = <...existing...>, <KOROKORO_GESTURES>;
+ *     };
+ *     &gesture_action { reserved-layers = <0 1 2>; };
+ *
+ * What it defines:
+ *   - zip_gesture_1..6: one recognizer per group, four directions each,
+ *     tuned on CLine46 hardware (stroke-size 100, threshold 5, cooldown 200).
+ *   - &gesture_action: 24 named slots. Groups 1-4 carry defaults (browser
+ *     tabs / desktops / navigation / editing) so a fresh flash does something
+ *     useful; groups 5-6 are blank, to be assigned from the settings page.
+ *   - Groups 1-4 default to layers 7-10. Override before the include when a
+ *     keyboard numbers its gesture layers differently:
+ *
+ *         #define KOROKORO_GESTURE_LAYER_1 4
+ *         #include <presets/gesture_six_groups.dtsi>
+ *
+ *     Groups 5-6 park on BIT(31) - no layer - until assigned at runtime.
+ *   - Every node is labeled, so any tuning value can still be overridden the
+ *     normal devicetree way: &zip_gesture_1 { stroke-size = <150>; };
+ *
+ * Needs CONFIG_ZMK_GESTURE_ACTION_COUNT >= 24 (the Kconfig default).
+ */
+
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/keys.h>
+#include <dt-bindings/zmk/mouse-gesture.h>
+#include <zephyr/dt-bindings/dt-util.h>
+#include <behaviors/gesture_action.dtsi>
+
+#ifndef KOROKORO_GESTURE_LAYER_1
+#define KOROKORO_GESTURE_LAYER_1 7
+#endif
+#ifndef KOROKORO_GESTURE_LAYER_2
+#define KOROKORO_GESTURE_LAYER_2 8
+#endif
+#ifndef KOROKORO_GESTURE_LAYER_3
+#define KOROKORO_GESTURE_LAYER_3 9
+#endif
+#ifndef KOROKORO_GESTURE_LAYER_4
+#define KOROKORO_GESTURE_LAYER_4 10
+#endif
+
+/* Splice into an input listener's BASE chain (not a layer override - an
+ * override would pin the group to one layer at build time and, worse, stop
+ * the chain for every other group). */
+#define KOROKORO_GESTURES                                                      \
+    &zip_gesture_1 &zip_gesture_2 &zip_gesture_3                               \
+    &zip_gesture_4 &zip_gesture_5 &zip_gesture_6
+
+/* One recognizer. The tuning numbers are the ones that survived hardware
+ * rounds on a CLine46 (600 CPI PMW3610): symmetric ~4.2mm strokes, a small
+ * noise floor, and a cooldown short enough for deliberate repeats. */
+#define KOROKORO_GESTURE_INST(idx, name, layer_mask, s_up, s_down, s_left, s_right) \
+    zip_gesture_##idx: zip_gesture_##idx {                                     \
+        compatible = "zmk,input-processor-mouse-gesture";                      \
+        #input-processor-cells = <0>;                                          \
+        display-name = name;                                                   \
+        active-layers = <layer_mask>;                                          \
+        always-active;                                                         \
+        suppress-movement;                                                     \
+        enable-eager-mode;                                                     \
+        gesture-cooldown-ms = <200>;                                           \
+        stroke-size = <100>;                                                   \
+        movement-threshold = <5>;                                              \
+                                                                               \
+        up    { pattern = <GESTURE_UP>;    bindings = <&gesture_action s_up>;    }; \
+        down  { pattern = <GESTURE_DOWN>;  bindings = <&gesture_action s_down>;  }; \
+        left  { pattern = <GESTURE_LEFT>;  bindings = <&gesture_action s_left>;  }; \
+        right { pattern = <GESTURE_RIGHT>; bindings = <&gesture_action s_right>; }; \
+    };
+
+/ {
+    KOROKORO_GESTURE_INST(1, "Group 1", BIT(KOROKORO_GESTURE_LAYER_1),  0,  1,  2,  3)
+    KOROKORO_GESTURE_INST(2, "Group 2", BIT(KOROKORO_GESTURE_LAYER_2),  4,  5,  6,  7)
+    KOROKORO_GESTURE_INST(3, "Group 3", BIT(KOROKORO_GESTURE_LAYER_3),  8,  9, 10, 11)
+    KOROKORO_GESTURE_INST(4, "Group 4", BIT(KOROKORO_GESTURE_LAYER_4), 12, 13, 14, 15)
+    /* Unassigned: BIT(31) is a layer no keymap has, which is how "no layer"
+     * is spelled - active-layers = 0 would mean "every layer" instead. */
+    KOROKORO_GESTURE_INST(5, "Group 5", BIT(31), 16, 17, 18, 19)
+    KOROKORO_GESTURE_INST(6, "Group 6", BIT(31), 20, 21, 22, 23)
+};
+
+&gesture_action {
+    /* Shown by settings UIs in place of bare slot numbers. */
+    slot-names =
+        "G1 Up", "G1 Down", "G1 Left", "G1 Right",
+        "G2 Up", "G2 Down", "G2 Left", "G2 Right",
+        "G3 Up", "G3 Down", "G3 Left", "G3 Right",
+        "G4 Up", "G4 Down", "G4 Left", "G4 Right",
+        "G5 Up", "G5 Down", "G5 Left", "G5 Right",
+        "G6 Up", "G6 Down", "G6 Left", "G6 Right";
+
+    default-bindings =
+        /* Group 1: browser tabs */
+        <&kp LC(T)>,            /* up:    new tab        */
+        <&kp LC(W)>,            /* down:  close tab      */
+        <&kp LC(LS(TAB))>,      /* left:  previous tab   */
+        <&kp LC(TAB)>,          /* right: next tab       */
+        /* Group 2: virtual desktops / windows */
+        <&kp LG(TAB)>,          /* up:    task view      */
+        <&kp LG(D)>,            /* down:  show desktop   */
+        <&kp LC(LG(LEFT))>,     /* left:  desktop left   */
+        <&kp LC(LG(RIGHT))>,    /* right: desktop right  */
+        /* Group 3: in-page navigation */
+        <&kp LC(HOME)>,         /* up:    top            */
+        <&kp LC(END)>,          /* down:  bottom         */
+        <&kp LA(LEFT)>,         /* left:  back           */
+        <&kp LA(RIGHT)>,        /* right: forward        */
+        /* Group 4: editing */
+        <&kp LC(Z)>,            /* up:    undo           */
+        <&kp LC(Y)>,            /* down:  redo           */
+        <&kp LC(C)>,            /* left:  copy           */
+        <&kp LC(V)>;            /* right: paste          */
+        /* Groups 5-6 (slots 16-23): no defaults; assign from the settings page. */
+};

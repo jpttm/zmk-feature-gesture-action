@@ -81,73 +81,47 @@ manifest:
       revision: main
 ```
 
-### 2. Choose how many slots
+### 2. Include the preset and splice it into your listener
 
-```ini
-# boards/shields/<your board>/<your board>.conf
-CONFIG_ZMK_GESTURE_ACTION_COUNT=24
-```
-
-One slot per gesture. Six gesture groups of four directions each needs 24.
-
-The RPC handler switches itself on when a `gesture_action` node exists, so
-there is no separate `CONFIG_..._STUDIO_RPC` to remember.
-
-### 3. Declare the node
+In the overlay - **and that is essentially the whole integration:**
 
 ```dts
-#include <behaviors/gesture_action.dtsi>
+#include <presets/gesture_six_groups.dtsi>
+
+&trackball_listener {
+    input-processors = <...existing processors...>, <KOROKORO_GESTURES>;
+};
 
 &gesture_action {
-    /* Shown in the settings UI instead of a bare slot number. Keep them
-       short - they travel over RPC with a 24-byte cap. */
-    slot-names =
-        "G1 Up", "G1 Down", "G1 Left", "G1 Right",
-        "G2 Up", "G2 Down", "G2 Left", "G2 Right";
-
-    /* What each slot does before anyone configures it, in slot order. */
-    default-bindings =
-        <&kp LC(T)>, <&kp LC(W)>, <&kp LS(LC(TAB))>, <&kp LC(TAB)>,
-        <&kp LG(TAB)>, <&kp LG(D)>, <&kp LC(LG(LEFT))>, <&kp LC(LG(RIGHT))>;
-
-    /* Layers you want kept for ordinary use, so the settings page does not
-       offer them for gestures. Policy only - see "Which layers get offered". */
+    /* layers you want kept for ordinary use (policy only) */
     reserved-layers = <0 1 2>;
 };
 ```
 
-### 4. Point something at the slots
+The preset carries six recognizer instances, 24 named slots, and defaults for
+groups 1-4 (browser tabs / virtual desktops / navigation / editing), so a
+fresh flash already does something useful. Everything is editable from the
+settings page afterwards.
 
-With `zmk-mouse-gesture`, one processor instance per gesture group:
+- Groups 1-4 default to layers 7-10; override before the include with
+  `#define KOROKORO_GESTURE_LAYER_1 4` if your keyboard numbers differently
+- Tuning stays overridable the normal devicetree way:
+  `&zip_gesture_1 { stroke-size = <150>; };`
+- `CONFIG_ZMK_GESTURE_ACTION_COUNT` defaults to 24 now, so no conf line needed
+- Splice into the listener's **base** chain, not a layer override - see the
+  design notes for why
 
-```dts
-zip_gesture_1: zip_gesture_1 {
-    compatible = "zmk,input-processor-mouse-gesture";
-    #input-processor-cells = <0>;
-    display-name = "Group 1";
-    active-layers = <BIT(7)>;   /* which layer this group acts on */
-    always-active;
-    suppress-movement;          /* freeze the cursor while gesturing */
-    enable-eager-mode;
+<details>
+<summary>Writing it all yourself instead</summary>
 
-    up    { pattern = <GESTURE_UP>;    bindings = <&gesture_action 0>; };
-    down  { pattern = <GESTURE_DOWN>;  bindings = <&gesture_action 1>; };
-    left  { pattern = <GESTURE_LEFT>;  bindings = <&gesture_action 2>; };
-    right { pattern = <GESTURE_RIGHT>; bindings = <&gesture_action 3>; };
-};
-```
+Declare the `&gesture_action` node (slot-names / default-bindings /
+reserved-layers) and the six processor instances by hand. The preset source,
+[`dts/presets/gesture_six_groups.dtsi`](dts/presets/gesture_six_groups.dtsi),
+is the worked example.
 
-Then add the processors to your input listener's **base** chain — not a layer
-override. See the design notes for why that matters.
+</details>
 
-```dts
-&trackball_listener {
-    input-processors = <&mouse_runtime_input_processor>,
-        <&zip_gesture_1>, <&zip_gesture_2>;
-};
-```
-
-### 5. Name your layers
+### 3. Name your layers
 
 Optional, but the settings page shows them, and "GESTURE1" beats "7".
 

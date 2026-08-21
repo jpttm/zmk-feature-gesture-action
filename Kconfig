@@ -42,7 +42,7 @@ config ZMK_GESTURE_ACTION_LAYER_GROUPS
 
 config ZMK_GESTURE_ACTION_COUNT
     int "Number of gesture action slots"
-    default 16
+    default 24
     range 1 64
     help
       How many independently assignable actions exist. Each slot costs a

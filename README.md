@@ -81,75 +81,47 @@ manifest:
       revision: main
 ```
 
-### 2. スロット数を決める
+### 2. プリセットを読み込んで、リスナーにつなぐ
 
-```ini
-# boards/shields/<ボード名>/<ボード名>.conf
-CONFIG_ZMK_GESTURE_ACTION_COUNT=24
-```
-
-ジェスチャー1つにつきスロット1つです。上下左右4方向のグループを6つ持つなら 24
-になります。
-
-RPC のハンドラは `gesture_action` ノードがあれば自動で有効になるので、
-`CONFIG_..._STUDIO_RPC` のような設定を別途書く必要はありません。
-
-### 3. ノードを宣言する
+overlay に次を書きます。**これで組み込みは実質完了です。**
 
 ```dts
-#include <behaviors/gesture_action.dtsi>
+#include <presets/gesture_six_groups.dtsi>
+
+&trackball_listener {
+    input-processors = <既存のプロセッサ...>, <KOROKORO_GESTURES>;
+};
 
 &gesture_action {
-    /* 設定画面にスロット番号ではなくこの名前が出る。
-       RPC で運ぶ都合上 24 バイト上限なので短めに。 */
-    slot-names =
-        "G1 Up", "G1 Down", "G1 Left", "G1 Right",
-        "G2 Up", "G2 Down", "G2 Left", "G2 Right";
-
-    /* 何も設定していないときの動作。スロット番号順に並べる。 */
-    default-bindings =
-        <&kp LC(T)>, <&kp LC(W)>, <&kp LS(LC(TAB))>, <&kp LC(TAB)>,
-        <&kp LG(TAB)>, <&kp LG(D)>, <&kp LC(LG(LEFT))>, <&kp LC(LG(RIGHT))>;
-
-    /* 通常用途のために空けておきたいレイヤー。設定画面がジェスチャーの
-       割り当て先として出さなくなる。方針の分だけ書けばよい
-       （後述「どのレイヤーが選択肢に出るか」を参照）。 */
+    /* 通常用途のために空けておきたいレイヤー(方針の分だけ) */
     reserved-layers = <0 1 2>;
 };
 ```
 
-### 4. スロットを叩くものを用意する
+プリセットには、6グループ分の認識プロセッサ・24個の名前付きスロット・
+グループ1〜4の初期動作（ブラウザのタブ / 仮想デスクトップ / ページ内移動 /
+編集）まで入っています。書き込んだ直後から動き、変更は設定ページから行えます。
 
-`zmk-mouse-gesture` の場合、グループごとにプロセッサのインスタンスを1つ置きます。
+- グループ1〜4の初期レイヤーは 7〜10 です。違うレイヤーにしたい場合は
+  include の**前**に `#define KOROKORO_GESTURE_LAYER_1 4` のように上書きします
+- 感度などの調整値も通常の devicetree 記法で上書きできます:
+  `&zip_gesture_1 { stroke-size = <150>; };`
+- スロット数の Kconfig（`CONFIG_ZMK_GESTURE_ACTION_COUNT`）は既定で 24 なので、
+  書く必要はありません
+- リスナーの**ベースチェーン**につなぎます。レイヤー上書き（`layers = <N>`）に
+  入れてはいけません。理由は後述の設計メモにあります
 
-```dts
-zip_gesture_1: zip_gesture_1 {
-    compatible = "zmk,input-processor-mouse-gesture";
-    #input-processor-cells = <0>;
-    display-name = "Group 1";
-    active-layers = <BIT(7)>;   /* このグループが効くレイヤー */
-    always-active;
-    suppress-movement;          /* ジェスチャー中カーソルを止める */
-    enable-eager-mode;
+<details>
+<summary>プリセットを使わず、全部自分で書きたい場合</summary>
 
-    up    { pattern = <GESTURE_UP>;    bindings = <&gesture_action 0>; };
-    down  { pattern = <GESTURE_DOWN>;  bindings = <&gesture_action 1>; };
-    left  { pattern = <GESTURE_LEFT>;  bindings = <&gesture_action 2>; };
-    right { pattern = <GESTURE_RIGHT>; bindings = <&gesture_action 3>; };
-};
-```
+スロット数の Kconfig、`&gesture_action` ノード（slot-names / default-bindings /
+reserved-layers）、ジェスチャープロセッサ6個を自分で並べます。プリセットの
+中身 [`dts/presets/gesture_six_groups.dtsi`](dts/presets/gesture_six_groups.dtsi)
+がそのまま見本になります。
 
-そして input listener の**ベースチェーン**に並べます。レイヤー上書き
-（`layers = <N>`）**ではありません。** 理由は後述の設計メモにあります。
+</details>
 
-```dts
-&trackball_listener {
-    input-processors = <&mouse_runtime_input_processor>,
-        <&zip_gesture_1>, <&zip_gesture_2>;
-};
-```
-
-### 5. レイヤーに名前を付ける
+### 3. レイヤーに名前を付ける
 
 任意ですが、設定画面に表示されるので「GESTURE1」のほうが「7」より分かりやすいです。
 
