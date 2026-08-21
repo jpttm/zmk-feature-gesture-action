@@ -65,11 +65,11 @@
 /* One recognizer. The tuning numbers are the ones that survived hardware
  * rounds on a CLine46 (600 CPI PMW3610): symmetric ~4.2mm strokes, a small
  * noise floor, and a cooldown short enough for deliberate repeats. */
-#define KOROKORO_GESTURE_INST(idx, name, layer_mask, s_up, s_down, s_left, s_right) \
+#define KOROKORO_GESTURE_INST(idx, disp, layer_mask, s_up, s_down, s_left, s_right) \
     zip_gesture_##idx: zip_gesture_##idx {                                     \
         compatible = "zmk,input-processor-mouse-gesture";                      \
         #input-processor-cells = <0>;                                          \
-        display-name = name;                                                   \
+        display-name = disp;                                                   \
         active-layers = <layer_mask>;                                          \
         always-active;                                                         \
         suppress-movement;                                                     \
