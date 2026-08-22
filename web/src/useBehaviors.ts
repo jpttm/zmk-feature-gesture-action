@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { RpcConnection } from "@zmkfirmware/zmk-studio-ts-client";
 import { call_rpc } from "@zmkfirmware/zmk-studio-ts-client";
 
@@ -20,23 +20,28 @@ export interface BehaviorInfo {
   param2: ParamDescription[];
 }
 
-/* Details are cached across sessions. A behaviour id is a CRC16 of its name,
- * so it means the same thing on any firmware and any keyboard - the mapping
- * cannot go stale the way a version-keyed cache would. */
-const CACHE_KEY = "zmk-gesture-action.behaviors.v1";
+/* Details are cached across sessions, one cache per keyboard. A behaviour id
+ * is a CRC16 of its node name, so the same id names the same behaviour on any
+ * firmware - but its metadata (display name, parameter shapes) can differ
+ * between keyboards when they carry different modules or versions under the
+ * same name. Scoping by device serial keeps a CLine46 and a moNa2 on the same
+ * browser from reading each other's details. Without a serial the cache is
+ * shared, as before. */
+const CACHE_BASE = "zmk-gesture-action.behaviors.v1";
+const cacheKey = (scope: string | null) => (scope ? `${CACHE_BASE}.${scope}` : CACHE_BASE);
 
-function readCache(): Record<string, BehaviorInfo> {
+function readCache(scope: string | null): Record<string, BehaviorInfo> {
   try {
-    const raw = localStorage.getItem(CACHE_KEY);
+    const raw = localStorage.getItem(cacheKey(scope));
     return raw ? (JSON.parse(raw) as Record<string, BehaviorInfo>) : {};
   } catch {
     return {};
   }
 }
 
-function writeCache(cache: Record<string, BehaviorInfo>) {
+function writeCache(scope: string | null, cache: Record<string, BehaviorInfo>) {
   try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+    localStorage.setItem(cacheKey(scope), JSON.stringify(cache));
   } catch {
     // A full or disabled localStorage costs a slow reconnect, nothing more.
   }
@@ -57,10 +62,15 @@ type BehaviorDetails = { metadata?: { param1?: unknown[]; param2?: unknown[] }[]
 const set1 = (d: BehaviorDetails) => d.metadata?.[0]?.param1;
 const set2 = (d: BehaviorDetails) => d.metadata?.[0]?.param2;
 
-export function useBehaviors(connection: RpcConnection | null) {
+export function useBehaviors(connection: RpcConnection | null, scope: string | null = null) {
   const [behaviors, setBehaviors] = useState<BehaviorInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Read at load time rather than listed as a dependency: the device info
+  // that supplies the scope can land a beat after the connection, and that
+  // must not trigger a second full fetch.
+  const scopeRef = useRef(scope);
+  scopeRef.current = scope;
 
   const load = useCallback(async (conn: RpcConnection) => {
     setLoading(true);
@@ -74,7 +84,8 @@ export function useBehaviors(connection: RpcConnection | null) {
       const listed = await call_rpc(conn, { behaviors: { listAllBehaviors: true } });
       const ids = listed.behaviors?.listAllBehaviors?.behaviors ?? [];
 
-      const cache = readCache();
+      const scopeNow = scopeRef.current;
+      const cache = readCache(scopeNow);
       const collected: BehaviorInfo[] = [];
       let fetched = false;
 
@@ -114,7 +125,7 @@ export function useBehaviors(connection: RpcConnection | null) {
       }
 
       if (fetched) {
-        writeCache(cache);
+        writeCache(scopeNow, cache);
       }
       // Phase timing, so slow reconnects can be diagnosed from numbers
       // instead of impressions. Read it in the browser console.

@@ -181,6 +181,9 @@ groups lands at about 60% RAM.
   time and everything else still works. Three of the four PRs in this series
   are merged upstream; the last is
   [proposed](https://github.com/kot149/zmk-mouse-gesture/pull/14).
+- On a split keyboard, gesture recognition is built and runs **on the central
+  half only**. If the trackball sits on the peripheral, relay its input with
+  ZMK's input-split so the listener (and this chain) live on the central.
 - The preset buttons on the settings page assume four gestures per group and
   sixteen slots. Everything else — slot names, group count, layers — comes from
   the device, so a different shape falls back to the per-slot editor rather than

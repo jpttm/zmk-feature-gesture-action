@@ -31,6 +31,7 @@ export function GestureActions() {
   );
   const { behaviors, loading: behaviorsLoading } = useBehaviors(
     zmk?.state.connection ?? null,
+    deviceScope(zmk?.state.deviceInfo?.serialNumber),
   );
   // The keymap is kilobytes and every RPC shares one serialized pipe, so
   // fetching it alongside the gesture data was inflating the actions phase
@@ -477,6 +478,7 @@ function Presets({
   onPreview: (preset: Preset | null) => void;
   onApply: (preset: Preset, keyPressId: number) => void;
 }) {
+  const tooFewSlots = preview ? total < preview.actions.length : false;
   const t = useT();
   const { lang } = useLang();
 
@@ -505,11 +507,11 @@ function Presets({
             {preview.name[lang]} — {t("presetPreview")}
           </h3>
 
-          {/* The preset assumes a 16-slot layout; on anything else the
-              preview is where a mismatch becomes visible. */}
-          {total !== preview.actions.length && (
-            <p className="warn small">{t("presetMismatch")}</p>
-          )}
+          {/* The preset writes 16 slots. More slots than that is fine - the
+              rest are left alone - but fewer would mean a partial write that
+              stops at the first out-of-range slot, so it is refused outright
+              rather than warned about. */}
+          {tooFewSlots && <p className="warn small">{t("presetMismatch")}</p>}
 
           {/* Directions run down the rows and layers across the columns, the
               same way round as the per-group editor. The two used to be
@@ -553,7 +555,10 @@ function Presets({
           <p className="muted small">{t("presetOverwrite")}</p>
 
           <div className="row">
-            <button disabled={busy} onClick={() => onApply(preview, keyPressId)}>
+            <button
+              disabled={busy || tooFewSlots}
+              onClick={() => onApply(preview, keyPressId)}
+            >
               {busy ? t("presetApplying") : t("presetApply")}
             </button>
             <button className="ghost" disabled={busy} onClick={() => onPreview(null)}>
@@ -564,6 +569,14 @@ function Presets({
       )}
     </div>
   );
+}
+
+/** Serial as hex, for per-keyboard caches; null when the device has none. */
+function deviceScope(serial: Uint8Array | undefined): string | null {
+  if (!serial || serial.length === 0) return null;
+  return Array.from(serial)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 /** Presets assign key presses, so they need that behaviour's id. */

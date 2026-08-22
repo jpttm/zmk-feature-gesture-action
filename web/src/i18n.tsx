@@ -125,8 +125,8 @@ export const STRINGS = {
     en: "This overwrites the current assignments.",
   },
   presetMismatch: {
-    ja: "このプリセットはスロット16個の構成向けです。お使いのキーボードでは意図しない割り当てになる可能性があります。内容をよく確認してください。",
-    en: "This preset targets a 16-slot layout. On this keyboard it may land somewhere unintended — check the list carefully.",
+    ja: "このプリセットは16スロット分の割り当てですが、お使いのキーボードのスロット数が足りないため適用できません。個別に設定してください。",
+    en: "This preset assigns 16 slots, but this keyboard has fewer, so it cannot be applied here. Assign slots individually instead.",
   },
   presetNoKeyPress: {
     ja: "キーボードから Key Press ビヘイビアが見つかりません。",

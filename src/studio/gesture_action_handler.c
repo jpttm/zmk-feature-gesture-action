@@ -156,6 +156,10 @@ static int handle_get_groups(jpttm_gesture_action_Response *resp) {
 
 static int handle_set_group_layers(const jpttm_gesture_action_SetGroupLayersRequest *req,
                                    jpttm_gesture_action_Response *resp) {
+    if (req->index > UINT8_MAX) {
+        LOG_WRN("SetGroupLayers index %u does not fit a group index", req->index);
+        return -EINVAL;
+    }
     int rc = zmk_mouse_gesture_set_active_layers((uint8_t)req->index, req->active_layers,
                                                  req->persist);
     if (rc == -EINVAL) {
@@ -187,6 +191,10 @@ static int handle_set_action(const jpttm_gesture_action_SetActionRequest *req,
         .param2 = req->action.param2,
     };
 
+    if (req->action.slot > UINT8_MAX) {
+        LOG_WRN("SetAction slot %u does not fit a slot index", req->action.slot);
+        return -EINVAL;
+    }
     int rc = zmk_gesture_action_set((uint8_t)req->action.slot, &entry, req->persist);
     if (rc == -EINVAL) {
         LOG_WRN("SetAction for out-of-range slot %u", req->action.slot);
@@ -203,6 +211,10 @@ static int handle_set_action(const jpttm_gesture_action_SetActionRequest *req,
 
 static int handle_reset_action(const jpttm_gesture_action_ResetActionRequest *req,
                                jpttm_gesture_action_Response *resp) {
+    if (req->slot > UINT8_MAX) {
+        LOG_WRN("ResetAction slot %u does not fit a slot index", req->slot);
+        return -EINVAL;
+    }
     int rc = zmk_gesture_action_reset((uint8_t)req->slot, req->persist);
     if (rc == -EINVAL) {
         LOG_WRN("ResetAction for out-of-range slot %u", req->slot);
