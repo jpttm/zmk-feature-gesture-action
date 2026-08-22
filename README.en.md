@@ -138,6 +138,10 @@ reserved-layers) and the six processor instances by hand. The preset source,
 [`dts/presets/gesture_six_groups.dtsi`](dts/presets/gesture_six_groups.dtsi),
 is the worked example.
 
+If you want Korokoro Kit to edit the layout naturally, keep slots grouped in
+consecutive fours: 0-3, 4-7, and so on. Other layouts can work at the firmware
+level, but they will not line up with the settings page's group display.
+
 </details>
 
 ### 3. Give the keymap a gesture layer
@@ -184,10 +188,14 @@ groups lands at about 60% RAM.
 - On a split keyboard, gesture recognition is built and runs **on the central
   half only**. If the trackball sits on the peripheral, relay its input with
   ZMK's input-split so the listener (and this chain) live on the central.
-- The preset buttons on the settings page assume four gestures per group and
-  sixteen slots. Everything else — slot names, group count, layers — comes from
-  the device, so a different shape falls back to the per-slot editor rather than
-  breaking.
+- Korokoro Kit and the bundled preset treat **one group as four directions:
+  up, down, left and right, backed by four consecutive slots**. The settings UI
+  displays slots in that shape. Multi-stroke gestures such as up-then-right can
+  still be written by hand in devicetree, but they tend to add confirmation
+  delay and recognition ambiguity, so they are not the recommended default.
+- The default slot count is 24. The recommended presets use the first four
+  groups, i.e. 16 slots. Groups 5 and 6 are left as spare capacity; assign them
+  to layers from the settings page when you want more gesture layers later.
 
 ## Design notes
 
