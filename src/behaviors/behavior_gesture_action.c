@@ -55,11 +55,17 @@ static bool is_held[SLOT_COUNT];
 
 static int settings_set_cb(const char *name, size_t len, settings_read_cb read_cb, void *cb_arg) {
     const char *next;
-    if (!settings_name_steq(name, "", &next) || !next) {
+    int name_len = settings_name_next(name, &next);
+    if (name_len <= 0 || next != NULL) {
         return 0;
     }
 
-    unsigned long slot = strtoul(next, NULL, 10);
+    char *end;
+    unsigned long slot = strtoul(name, &end, 10);
+    if (end != name + name_len) {
+        return 0;
+    }
+
     if (slot >= SLOT_COUNT) {
         LOG_WRN("Ignoring stored gesture action for out-of-range slot %lu", slot);
         return 0;
