@@ -20,14 +20,14 @@ import { useLang } from "./i18n";
  * "jpttm" in the name marks whose build this is - it keeps these apart from
  * takamaru's official CLine46_R.uf2 in a download folder, and a support
  * conversation can start from the filename alone. */
-const FW_VERSION = "jpttm-20260818";
+const FW_VERSION = "jpttm-20260822";
 const FW_R_NAME = `CLine46_R-${FW_VERSION}.uf2`;
 const FW_L_NAME = `CLine46_L-${FW_VERSION}.uf2`;
 const FW_R = import.meta.env.BASE_URL + "firmware/" + FW_R_NAME;
 const FW_L = import.meta.env.BASE_URL + "firmware/" + FW_L_NAME;
 /* Same bundle minus scroll inertia, for anyone who prefers scrolling to stop
  * when the ball does. Named by what is absent, so the file explains itself. */
-const FW_NI_VERSION = "jpttm-no-inertia-20260818";
+const FW_NI_VERSION = "jpttm-no-inertia-20260822";
 const FW_R_NI = import.meta.env.BASE_URL + `firmware/CLine46_R-${FW_NI_VERSION}.uf2`;
 const FW_L_NI = import.meta.env.BASE_URL + `firmware/CLine46_L-${FW_NI_VERSION}.uf2`;
 /* The beginner-facing setup guide: flashing, DYA Studio, what the bundle
@@ -139,6 +139,12 @@ function Ja() {
       <p>
         ビルド不要の非公式ファームウェアを用意しています。2026年8月18日時点の
         CLine46 最新ファームウェアに、ジェスチャー機能などを追加したものです。
+      </p>
+      <p className="muted small">
+        <strong>2026年8月22日 更新:</strong> ころころKit で変更した割り当てや
+        グループのレイヤーが、電源を入れ直すと初期値に戻ってしまう不具合を修正
+        しました。8月18日版をお使いの方は書き換えをおすすめします（キーマップなど
+        保存済みの設定はそのまま残ります）。
       </p>
       <Downloads lang="ja" />
       <p className="muted small">
@@ -308,6 +314,12 @@ function En() {
       <p>
         A no-build unofficial firmware is provided: the latest CLine46 firmware as of
         18 August 2026, with gesture support and more added.
+      </p>
+      <p className="muted small">
+        <strong>Updated 22 August 2026:</strong> fixed a bug where assignments and
+        group layers changed in korokoro Kit reverted to their defaults after a
+        power cycle. If you flashed the 18 August build, please re-flash (your
+        keymap and other saved settings are kept).
       </p>
       <Downloads lang="en" />
       <p className="muted small">
