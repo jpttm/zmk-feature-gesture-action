@@ -63,7 +63,8 @@ combo, a macro step, a key position — can point at one.
 ## Adding it to a keyboard
 
 If DYA Studio already runs on your keyboard, there are exactly three things
-to do:
+to do. (If not, moving to cormoran's ZMK fork — see "What you need" above —
+comes first; on stock ZMK the settings page cannot talk to this module.)
 
 1. Add two modules to west.yml
 2. Write three lines in the overlay
